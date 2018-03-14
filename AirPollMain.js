@@ -13,6 +13,7 @@ function initApp() {
 	var dataPointsDbRef = firebase.firestore().collection('datapoints');
 
 	addMapClickListener(map, heatmap, dataPointsDbRef);
+	addDataPointDbListener(dataPointsDbRef, map);
 }
 
 function initMap() {
@@ -32,6 +33,7 @@ function initMap() {
 	});
 }
 
+//Heatmap is only used to show where we have data
 function initHeatmap(map) {
 	var heatmap = new google.maps.visualization.HeatmapLayer();
 	heatmap.setMap(map);
@@ -46,22 +48,32 @@ function initFirebase() {
 function addMapClickListener(map, heatmap, dataPointsDbRef) {
 	map.addListener('click', function(mapLayer) {
 		var latlng = mapLayer.latLng;
-		addNewDataPointClickToDb(latlng, dataPointsDbRef);
+		var randomWeight = Math.floor((Math.random() * 100));
 
-		var randomWeight = Math.floor((Math.random() * 100) + 1);
-		addMarkerToMap(latlng, map, randomWeight.toString());
-		heatmap.getData().push({location: latlng, weight: randomWeight});
+		addNewDataPointClickToDb(dataPointsDbRef, latlng, randomWeight);
+		addMarkerToMap(latlng, map, randomWeight);
+		// heatmap.getData().push(latlng); hiding heatmap
 	});
 }
 
-function addNewDataPointClickToDb(latlng, dataPointsDbRef) {
+function addNewDataPointClickToDb(dataPointsDbRef, latlng, data) {
 	dataPointsDbRef.add({
 		latlng: latlng.toJSON(),
+		data: data,
 		title: "hello!"
 	}).then(function(docRef) {
 		console.log("Document written with ID: ", docRef.id);
 	}).catch(function(error) {
 		console.error("Error adding document: ", error);
+	});
+}
+
+function addDataPointDbListener(dataPointsDbRef, map) {
+	dataPointsDbRef.get().then(function(dataPoints) {
+		dataPoints.forEach(function(dataPoint) {
+			addMarkerToMap(dataPoint.data().latlng, map, dataPoint.data().data)
+
+		});
 	});
 }
 
@@ -104,11 +116,22 @@ function addTestMarkersListener(ref, map) {
 }
 
 
-function addMarkerToMap(latlng, map, label) {
-	var marker = new google.maps.Marker({
+function addMarkerToMap(latlng, map, weight) {
+	var hue = (100 - weight) * 2.4;
+	var colorString = "hsl(" + hue +", 100%, 50%)";
+	new google.maps.Marker({
 		position: latlng,
-		label: label,
-		map: map
+		label: weight.toString(),
+		map: map,
+		icon: {
+			path: google.maps.SymbolPath.CIRCLE,
+			strokeColor: colorString,
+			strokeOpacity: 0.8,
+			strokeWeight: 1,
+			fillColor: colorString,
+			fillOpacity: 0.4,
+			scale: 100
+		}
 	});
 }
 
