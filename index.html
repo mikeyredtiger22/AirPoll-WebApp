@@ -40,14 +40,36 @@
         label { display: table-cell; margin: 10px; text-align: left}
         input { display: table-cell; margin: 10px; }
 
+        #showPoints {
+            position: absolute;
+            bottom: 260px;
+            left: 10px;
+            z-index: 99;
+        }
+        #showGrid {
+            position: absolute;
+            bottom: 290px;
+            left: 10px;
+            z-index: 99;
+        }
+        #showCircles {
+            position: absolute;
+            bottom: 320px;
+            left: 10px;
+            z-index: 99;
+        }
+
     </style>
 </head>
 <body>
 
 <div id="wrapper">
     <div id="map"></div>
+    <button id="showGrid" >Show Data Grid</button>
+    <button id="showPoints" >Show Data Points</button>
+    <button id="showCircles" >Show Data Circles</button>
     <div id="form">
-        <b style="font-size: 20px">Task Data</b>
+        <b style="font-size: 20px">Data Point</b>
         <form>
             <p>
                 <label for="date">Date</label>

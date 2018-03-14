@@ -1,5 +1,8 @@
 
 
+var dataPointMarkers = [];
+var dataPointCircles = [];
+
 
 /**
  * Creates a map object with a click listener and a heatmap.
@@ -14,6 +17,7 @@ function initApp() {
 
 	addMapClickListener(map, heatmap, dataPointsDbRef);
 	addDataPointDbListener(dataPointsDbRef, map);
+	addFormButtonListeners();
 }
 
 function initMap() {
@@ -74,45 +78,10 @@ function addDataPointDbListener(dataPointsDbRef, map) {
 			addMarkerToMap(map, dataPoint.data())
 		});
 	});
+
+	//TODO: get datapoints as they are added to database
 }
 
-
-function addTaskMarkersListeners(ref, map) {
-	// add listener for every task in database now
-	ref.once('value').then(function(snapshot) {
-		snapshot.forEach(function (child) {
-
-			var taskJson = JSON.parse(child.val());
-			var marker = new google.maps.Marker({
-				position: {lat: taskJson.locationLats[0], lng: taskJson.locationLongs[0]},
-				title: taskJson.title,
-				label: markerLabels[markeLabelIndex++ % markerLabels.length],
-				map: map
-			});
-		})
-	});
-	// add listener for each new task added from now on
-	ref.on('child_added', function(snapshot) {
-		snapshot.forEach(function (child) {
-
-			var taskJson = JSON.parse(child.val());
-			var marker = new google.maps.Marker({
-				position: {lat: taskJson.locationLats[0], lng: taskJson.locationLongs[0]},
-				title: taskJson.title,
-				label: markerLabels[markeLabelIndex++ % markerLabels.length],
-				map: map
-			});
-		});
-	});
-}
-
-
-function addTestMarkersListener(ref, map) {
-	// adds all existing markers and new markers added from now on
-	ref.on('child_added', function(snapshot) {
-		addMarkerToMap(snapshot.val(), map);
-	});
-}
 
 
 function addMarkerToMap(map, dataPoint) {
@@ -134,6 +103,8 @@ function addMarkerToMap(map, dataPoint) {
 		}
 	});
 
+	dataPointMarkers.push(marker);
+
 	marker.addListener('click', function() {
 		var date = new Date(dataPoint.date);
 		document.getElementById('date').value = date.toDateString();
@@ -141,29 +112,59 @@ function addMarkerToMap(map, dataPoint) {
 		document.getElementById('value').value = dataPoint.value;
 	});
 
-	new google.maps.Circle({
-		strokeOpacity: 0,
-		fillColor: colorString,
-		fillOpacity: 0.5,
-		map: map,
-		center: latlng,
-		radius: 10
-	});
-	new google.maps.Circle({
-		strokeOpacity: 0,
-		fillColor: colorString,
-		fillOpacity: 0.3,
-		map: map,
-		center: latlng,
-		radius: 20
-	});
-	new google.maps.Circle({
-		strokeOpacity: 0,
-		fillColor: colorString,
-		fillOpacity: 0.1,
-		map: map,
-		center: latlng,
-		radius: 50
-	});
+	drawCircle(latlng, map, colorString, 0.5, 10);
+	drawCircle(latlng, map, colorString, 0.3, 20);
+	drawCircle(latlng, map, colorString, 0.1, 40);
 }
 
+function drawCircle(latlng, map, colorString, opacity, radius) {
+	dataPointCircles.push(
+		new google.maps.Circle({
+			strokeOpacity: 0,
+			fillColor: colorString,
+			fillOpacity: opacity,
+			map: map,
+			center: latlng,
+			radius: radius
+		})
+	);
+}
+
+function addFormButtonListeners() {
+	var showGridButton = document.getElementById('showGrid');
+	showGridButton.onclick = function () {
+		if (showGridButton.innerText === 'Show Data Grid') {
+			showGridButton.innerText = 'Hide Data Grid';
+			//TODO: Hide Grid
+		} else {
+			showGridButton.innerText = 'Show Data Grid';
+			//TODO: Show Grid
+		}
+	};
+
+	var showPointsButton = document.getElementById('showPoints');
+	showPointsButton.onclick = function () {
+		if (showPointsButton.innerText === 'Show Data Points') {
+			showPointsButton.innerText = 'Hide Data Points';
+			dataPointMarkers.forEach(function (dataPointMarker) {
+				dataPointMarker.setVisible(false);
+			});
+		} else {
+			showPointsButton.innerText = 'Show Data Points';
+			dataPointMarkers.forEach(function (dataPointMarker) {
+				dataPointMarker.setVisible(true);
+			});
+		}
+	};
+
+	var showCirclesButton = document.getElementById('showCircles');
+	showCirclesButton.onclick = function () {
+		if (showCirclesButton.innerText === 'Show Data Circles') {
+			showCirclesButton.innerText = 'Hide Data Circles';
+			//TODO: Hide Circles
+		} else {
+			showCirclesButton.innerText = 'Show Data Circles';
+			//TODO: Show Circles
+		}
+	};
+}
