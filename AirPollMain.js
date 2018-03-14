@@ -51,12 +51,11 @@ function addMapClickListener(map, heatmap, dataPointsDbRef) {
 		var dataPoint = {
 			latlng: mapLayer.latLng.toJSON(),
 			value: Math.floor((Math.random() * 100)).toString(),
-			date: new Date().toString()
+			date: new Date().toUTCString()
 		};
 
 		addNewDataPointClickToDb(dataPointsDbRef, dataPoint);
-		// var latlng = {lat : dataPoint.latlng.lat, lng: dataPoint.latlng.lng};
-		addMarkerToMap(map, dataPoint, mapLayer.latLng.toJSON());
+		addMarkerToMap(map, dataPoint);
 		// heatmap.getData().push(latlng); hiding heatmap
 	});
 }
@@ -72,7 +71,7 @@ function addNewDataPointClickToDb(dataPointsDbRef, dataPoint) {
 function addDataPointDbListener(dataPointsDbRef, map) {
 	dataPointsDbRef.get().then(function(dataPoints) {
 		dataPoints.forEach(function(dataPoint) {
-			addMarkerToMap(map, dataPoint.data(), dataPoint.data().latlng)
+			addMarkerToMap(map, dataPoint.data())
 		});
 	});
 }
@@ -116,10 +115,11 @@ function addTestMarkersListener(ref, map) {
 }
 
 
-function addMarkerToMap(map, dataPoint, latlng) {
+function addMarkerToMap(map, dataPoint) {
+	latlng = dataPoint.latlng;
 	var hue = (100 - dataPoint.value) * 2.4;
 	var colorString = "hsl(" + hue +", 100%, 50%)";
-	new google.maps.Marker({
+	var marker = new google.maps.Marker({
 		position: latlng,
 		label: dataPoint.value.toString(),
 		map: map,
@@ -133,6 +133,14 @@ function addMarkerToMap(map, dataPoint, latlng) {
 			scale: 100
 		}
 	});
+
+	marker.addListener('click', function() {
+		var date = new Date(dataPoint.date);
+		document.getElementById('date').value = date.toDateString();
+		document.getElementById('time').value = date.toTimeString().split(' ')[0];
+		document.getElementById('value').value = dataPoint.value;
+	});
+
 	new google.maps.Circle({
 		strokeOpacity: 0,
 		fillColor: colorString,
