@@ -47,21 +47,22 @@ function initFirebase() {
 
 function addMapClickListener(map, heatmap, dataPointsDbRef) {
 	map.addListener('click', function(mapLayer) {
-		var latlng = mapLayer.latLng;
-		var randomWeight = Math.floor((Math.random() * 100));
 
-		addNewDataPointClickToDb(dataPointsDbRef, latlng, randomWeight);
-		addMarkerToMap(latlng, map, randomWeight);
+		var dataPoint = {
+			latlng: mapLayer.latLng.toJSON(),
+			value: Math.floor((Math.random() * 100)).toString(),
+			date: new Date().toString()
+		};
+
+		addNewDataPointClickToDb(dataPointsDbRef, dataPoint);
+		// var latlng = {lat : dataPoint.latlng.lat, lng: dataPoint.latlng.lng};
+		addMarkerToMap(map, dataPoint, mapLayer.latLng.toJSON());
 		// heatmap.getData().push(latlng); hiding heatmap
 	});
 }
 
-function addNewDataPointClickToDb(dataPointsDbRef, latlng, data) {
-	dataPointsDbRef.add({
-		latlng: latlng.toJSON(),
-		data: data,
-		title: "hello!"
-	}).then(function(docRef) {
+function addNewDataPointClickToDb(dataPointsDbRef, dataPoint) {
+	dataPointsDbRef.add(dataPoint).then(function(docRef) {
 		console.log("Document written with ID: ", docRef.id);
 	}).catch(function(error) {
 		console.error("Error adding document: ", error);
@@ -71,8 +72,7 @@ function addNewDataPointClickToDb(dataPointsDbRef, latlng, data) {
 function addDataPointDbListener(dataPointsDbRef, map) {
 	dataPointsDbRef.get().then(function(dataPoints) {
 		dataPoints.forEach(function(dataPoint) {
-			addMarkerToMap(dataPoint.data().latlng, map, dataPoint.data().data)
-
+			addMarkerToMap(map, dataPoint.data(), dataPoint.data().latlng)
 		});
 	});
 }
@@ -116,12 +116,12 @@ function addTestMarkersListener(ref, map) {
 }
 
 
-function addMarkerToMap(latlng, map, weight) {
-	var hue = (100 - weight) * 2.4;
+function addMarkerToMap(map, dataPoint, latlng) {
+	var hue = (100 - dataPoint.value) * 2.4;
 	var colorString = "hsl(" + hue +", 100%, 50%)";
 	new google.maps.Marker({
 		position: latlng,
-		label: weight.toString(),
+		label: dataPoint.value.toString(),
 		map: map,
 		icon: {
 			path: google.maps.SymbolPath.CIRCLE,
@@ -136,7 +136,7 @@ function addMarkerToMap(latlng, map, weight) {
 	new google.maps.Circle({
 		strokeOpacity: 0,
 		fillColor: colorString,
-		fillOpacity: 0.9,
+		fillOpacity: 0.5,
 		map: map,
 		center: latlng,
 		radius: 10
@@ -144,7 +144,7 @@ function addMarkerToMap(latlng, map, weight) {
 	new google.maps.Circle({
 		strokeOpacity: 0,
 		fillColor: colorString,
-		fillOpacity: 0.7,
+		fillOpacity: 0.3,
 		map: map,
 		center: latlng,
 		radius: 20
@@ -152,34 +152,10 @@ function addMarkerToMap(latlng, map, weight) {
 	new google.maps.Circle({
 		strokeOpacity: 0,
 		fillColor: colorString,
-		fillOpacity: 0.3,
-		map: map,
-		center: latlng,
-		radius: 40
-	});
-	new google.maps.Circle({
-		strokeOpacity: 0,
-		fillColor: colorString,
-		fillOpacity: 0.3,
+		fillOpacity: 0.1,
 		map: map,
 		center: latlng,
 		radius: 50
-	});
-	new google.maps.Circle({
-		strokeOpacity: 0,
-		fillColor: colorString,
-		fillOpacity: 0.3,
-		map: map,
-		center: latlng,
-		radius: 60
-	});
-	new google.maps.Circle({
-		strokeOpacity: 0,
-		fillColor: colorString,
-		fillOpacity: 0.3,
-		map: map,
-		center: latlng,
-		radius: 70
 	});
 }
 
