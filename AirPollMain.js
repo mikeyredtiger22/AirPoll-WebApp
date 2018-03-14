@@ -18,6 +18,8 @@ function initApp() {
 	addMapClickListener(map, heatmap, dataPointsDbRef);
 	addDataPointDbListener(dataPointsDbRef, map);
 	addFormButtonListeners();
+
+	displayGrid();
 }
 
 function initMap() {
@@ -147,12 +149,12 @@ function addFormButtonListeners() {
 		if (showPointsButton.innerText === 'Show Data Points') {
 			showPointsButton.innerText = 'Hide Data Points';
 			dataPointMarkers.forEach(function (dataPointMarker) {
-				dataPointMarker.setVisible(false);
+				dataPointMarker.setVisible(true);
 			});
 		} else {
 			showPointsButton.innerText = 'Show Data Points';
 			dataPointMarkers.forEach(function (dataPointMarker) {
-				dataPointMarker.setVisible(true);
+				dataPointMarker.setVisible(false);
 			});
 		}
 	};
@@ -161,10 +163,14 @@ function addFormButtonListeners() {
 	showCirclesButton.onclick = function () {
 		if (showCirclesButton.innerText === 'Show Data Circles') {
 			showCirclesButton.innerText = 'Hide Data Circles';
-			//TODO: Hide Circles
+			dataPointCircles.forEach(function (dataPointCircle) {
+				dataPointCircle.setVisible(true);
+			});
 		} else {
 			showCirclesButton.innerText = 'Show Data Circles';
-			//TODO: Show Circles
+			dataPointCircles.forEach(function (dataPointCircle) {
+				dataPointCircle.setVisible(false);
+			});
 		}
 	};
 }
