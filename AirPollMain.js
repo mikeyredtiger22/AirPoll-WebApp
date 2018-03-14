@@ -126,12 +126,60 @@ function addMarkerToMap(latlng, map, weight) {
 		icon: {
 			path: google.maps.SymbolPath.CIRCLE,
 			strokeColor: colorString,
-			strokeOpacity: 0.8,
+			strokeOpacity: 0,
 			strokeWeight: 1,
 			fillColor: colorString,
-			fillOpacity: 0.4,
+			fillOpacity: 0,
 			scale: 100
 		}
+	});
+	new google.maps.Circle({
+		strokeOpacity: 0,
+		fillColor: colorString,
+		fillOpacity: 0.9,
+		map: map,
+		center: latlng,
+		radius: 10
+	});
+	new google.maps.Circle({
+		strokeOpacity: 0,
+		fillColor: colorString,
+		fillOpacity: 0.7,
+		map: map,
+		center: latlng,
+		radius: 20
+	});
+	new google.maps.Circle({
+		strokeOpacity: 0,
+		fillColor: colorString,
+		fillOpacity: 0.3,
+		map: map,
+		center: latlng,
+		radius: 40
+	});
+	new google.maps.Circle({
+		strokeOpacity: 0,
+		fillColor: colorString,
+		fillOpacity: 0.3,
+		map: map,
+		center: latlng,
+		radius: 50
+	});
+	new google.maps.Circle({
+		strokeOpacity: 0,
+		fillColor: colorString,
+		fillOpacity: 0.3,
+		map: map,
+		center: latlng,
+		radius: 60
+	});
+	new google.maps.Circle({
+		strokeOpacity: 0,
+		fillColor: colorString,
+		fillOpacity: 0.3,
+		map: map,
+		center: latlng,
+		radius: 70
 	});
 }
 
