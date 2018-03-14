@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style type="text/css">
+        #map {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #form {
+            position: absolute;
+            bottom: 30px;
+            left: 10px;
+            z-index: 99;
+
+            background-color: #fff;
+            border: 2px solid #fff;
+            border-radius: 3px;
+            box-shadow: 0 2px 6px rgba(0,0,0,.3);
+            cursor: pointer;
+            margin-bottom: 22px;
+            text-align: center;
+            /*}
+        #formText {*/
+            color: rgb(25,25,25);
+            font-family: Roboto,Arial,sans-serif;
+            font-size: 16px;
+            line-height: 38px;
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+        form  { display: table;      }
+        p     { display: table-row;  }
+        label { display: table-cell; margin: 10px; text-align: left}
+        input { display: table-cell; margin: 10px; }
+
+    </style>
+</head>
+<body>
+
+<div id="wrapper">
+    <div id="map"></div>
+    <div id="form">
+        <b style="font-size: 20px">Task Data</b>
+        <form>
+            <p>
+                <label for="zzz">Title</label>
+                <input id="zzz" type="text">
+            </p>
+            <p>
+                <label for="aaaaa">State</label>
+                <input id="aaaaa" type="text">
+            </p>
+            <p>
+                <label for="bbb">Incentive</label>
+                <input id="bbb" type="text" value="3.94">
+            </p>
+            <p>
+                <label for="ccc">User</label>
+                <input id="ccc" type="text">
+            </p>
+        </form>
+    </div>
+</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/4.7.0/firebase.js"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBIVZhGmK7mSioJpqvzxBlRJsMWMCt84P0&callback=initMap"></script>
+<!--Creates the firebase map-->
+<script src="AirPollMain.js"></script>
+</body>
+</html>
