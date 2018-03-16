@@ -18,47 +18,37 @@
             margin: 0;
             padding: 0;
         }
-        #formPanel {
+        #viewPanel {
+            position: absolute;
+            bottom: 350px;
+            left: 10px;
+            width: 325px;
+
+            background-color: #fff;
+            border: 2px solid #fff;
+            border-radius: 3px;
+            box-shadow: 0 2px 6px rgba(0,0,0,.3);
+            margin-bottom: 22px;
+            text-align: center;
+            padding-top: 10px;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+        #dataPointPanel {
             position: absolute;
             bottom: 10px;
             left: 10px;
-            width: auto;
+            width: 325px;
             z-index: 99;
 
             background-color: #fff;
             border: 2px solid #fff;
             border-radius: 3px;
             box-shadow: 0 2px 6px rgba(0,0,0,.3);
-            /*cursor: pointer;*/
             margin-bottom: 22px;
             text-align: center;
-
-            /*color: rgb(25,25,25);*/
-            /*font-family: Roboto,Arial,sans-serif;
-            font-size: 16px;
-            line-height: 38px;*/
             padding-top: 10px;
             padding-left: 15px;
-            padding-right: 15px;
-        }
-
-        #showGrid {
-            position: absolute;
-            bottom: 500px;
-            left: 10px;
-            z-index: 99;
-        }
-        #showPoints {
-            position: absolute;
-            bottom: 450px;
-            left: 10px;
-            z-index: 99;
-        }
-        #showCircles {
-            position: absolute;
-            bottom: 400px;
-            left: 10px;
-            z-index: 99;
         }
 
     </style>
@@ -67,40 +57,46 @@
 
 <div id="wrapper">
     <div id="map"></div>
-    <button id="showGrid" type="button" class="btn btn-outline-primary">Show Data Grid</button>
-    <button id="showPoints" type="button" class="btn btn-primary">Hide Data Points</button>
-    <button id="showCircles" type="button" class="btn btn-primary">Hide Data Circles</button>
 
+    <div id="viewPanel" class="">
+        <label class="col-lg-6 d-flex"><b>View Type</b></label>
+        <div class="btn-group p-3 justify-content-center d-flex" role="group">
+            <button id="viewPoints" type="button" class="btn btn-outline-primary">Grid</button>
+            <button id="viewGrid" type="button" class="btn btn-primary">Points</button>
+        </div>
+        <div class="d-flex my-3">
+            <button id="showPoints" type="button" class="btn btn-sm btn-primary mx-1">Hide Data Points</button>
+            <button id="showCircles" type="button" class="btn btn-sm btn-primary mx-1">Hide Data Circles</button>
+        </div>
+    </div>
 
-    <div id="formPanel">
+    <div id="dataPointPanel">
         <form>
             <label class="col-lg-6"><b>Data Point</b></label>
             <div class="form-group row">
                 <label for="date" class="col-sm-2 col-form-label">Date</label>
-                <div class="col-sm">
+                <div class="col-sm-auto">
                     <input class="form-control form-control-sm" id="date">
                 </div>
             </div>
             <div class="form-group row">
                 <label for="time" class="col-sm-2 col-form-label">Time</label>
-                <div class="col-sm">
+                <div class="col-sm-auto">
                     <input class="form-control form-control-sm" id="time">
                 </div>
             </div>
             <div class="form-group row">
                 <label for="value" class="col-sm-2 col-form-label">Value</label>
-                <div class="col-sm">
+                <div class="col-sm-auto">
                     <input class="form-control form-control-sm" id="value">
                 </div>
             </div>
             <div class="form-group row">
                 <label for="user" class="col-sm-2 col-form-label">User</label>
-                <div class="col-sm">
+                <div class="col-sm-auto">
                     <input class="form-control form-control-sm" id="user">
                 </div>
             </div>
-
-
         </form>
     </div>
 </div>
