@@ -127,7 +127,8 @@ function drawCircle(latlng, map, colorString, opacity, radius) {
 			fillOpacity: opacity,
 			map: map,
 			center: latlng,
-			radius: radius
+			radius: radius,
+			visible: false
 		})
 	);
 }
@@ -197,9 +198,15 @@ function displayGrid(map) {
 		var heightPixels = (sw.y - ne.y) * scale;
 
 		var totalSquareLengthPixels = Math.min(widthPixels, heightPixels);
-		text1.value = totalSquareLength;
+		text1.value = totalSquareLengthPixels;
 
 		var gridLengthPixes = totalSquareLengthPixels / 10; //Eventually changeable by slider
+		text2.value = gridLengthPixes;
+
+		var centerXPixels = widthPixels/2;
+		var centerYPixels = heightPixels/2;
+
+
 
 
 	});
