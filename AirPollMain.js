@@ -3,6 +3,10 @@
 var dataPointMarkers = [];
 var dataPointCircles = [];
 
+var showDataPoints = true;
+var showDataCircles = true;
+var showDataGrid = false;
+
 
 /**
  * Creates a map object with a click listener and a heatmap.
@@ -94,6 +98,7 @@ function addMarkerToMap(map, dataPoint) {
 		position: latlng,
 		label: dataPoint.value.toString(),
 		map: map,
+		visible: showDataPoints,
 		icon: {
 			path: google.maps.SymbolPath.CIRCLE,
 			strokeColor: colorString,
@@ -127,13 +132,14 @@ function drawCircle(latlng, map, colorString, opacity, radius) {
 			fillOpacity: opacity,
 			map: map,
 			center: latlng,
-			radius: radius
+			radius: radius,
+			visible: showDataCircles
 		})
 	);
 }
 
 function addFormButtonListeners() {
-	var showGridButton = document.getElementById('showGrid');
+	/*var showGridButton = document.getElementById('showGrid');
 	showGridButton.onclick = function () {
 		if (showGridButton.innerText === 'Show Data Grid') {
 			showGridButton.innerText = 'Hide Data Grid';
@@ -143,10 +149,11 @@ function addFormButtonListeners() {
 			//TODO: Show Grid
 		}
 	};
-
+*/
 	var showPointsButton = document.getElementById('showPoints');
 	showPointsButton.onclick = function () {
 		if (showPointsButton.innerText === 'Show Data Points') {
+			showDataPoints = true;
 			showPointsButton.innerText = 'Hide Data Points';
 			dataPointMarkers.forEach(function (dataPointMarker) {
 				dataPointMarker.setVisible(true);
@@ -154,6 +161,7 @@ function addFormButtonListeners() {
 			showPointsButton.classList.add('btn-primary');
 			showPointsButton.classList.remove('btn-outline-primary');
 		} else {
+			showDataPoints = false;
 			showPointsButton.innerText = 'Show Data Points';
 			dataPointMarkers.forEach(function (dataPointMarker) {
 				dataPointMarker.setVisible(false);
@@ -167,6 +175,7 @@ function addFormButtonListeners() {
 	var showCirclesButton = document.getElementById('showCircles');
 	showCirclesButton.onclick = function () {
 		if (showCirclesButton.innerText === 'Show Data Circles') {
+			showDataCircles = true;
 			showCirclesButton.innerText = 'Hide Data Circles';
 			dataPointCircles.forEach(function (dataPointCircle) {
 				dataPointCircle.setVisible(true);
@@ -174,6 +183,7 @@ function addFormButtonListeners() {
 			showCirclesButton.classList.add('btn-primary');
 			showCirclesButton.classList.remove('btn-outline-primary');
 		} else {
+			showDataCircles = false;
 			showCirclesButton.innerText = 'Show Data Circles';
 			dataPointCircles.forEach(function (dataPointCircle) {
 				dataPointCircle.setVisible(false);
