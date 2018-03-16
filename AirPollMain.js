@@ -28,7 +28,7 @@ function initApp() {
 function initMap() {
 	return new google.maps.Map(document.getElementById('map'), {
 		center: {lat: 50.9365, lng: -1.396},
-		zoom: 18,
+		zoom: 16,
 		//hide points of interest and public transport
 		styles: [{
 			featureType: 'poi',
@@ -146,6 +146,8 @@ function addFormButtonListeners(map) {
 	viewTypeButton.onclick = function () {
 		if (viewTypeButton.innerText === 'Show Grid View') {
 			viewTypeButton.innerText = 'Show Data Points View';
+			showDataPoints = false;
+			showDataCircles = false;
 			dataPointMarkers.forEach(function (dataPointMarker) {
 				dataPointMarker.setVisible(false);
 			});
@@ -155,6 +157,8 @@ function addFormButtonListeners(map) {
 			displayGrid(map)
 		} else {
 			viewTypeButton.innerText = 'Show Grid View';
+			showDataPoints = true;
+			showDataCircles = true;
 			dataPointMarkers.forEach(function (dataPointMarker) {
 				dataPointMarker.setVisible(true);
 			});
@@ -272,29 +276,41 @@ function displayGrid(map) {
 	for (var gridX=0; gridX< gridsAmountX+1; gridX++) {
 		gridDataCollection[gridX] = [];
 		for (var gridY=0; gridY< gridsAmountY+1; gridY++) {
-			gridDataCollection[gridX][gridY] = 0;
+			gridDataCollection[gridX][gridY] = [];
 		}
 	}
 
-	var count = 0;
 	allDataPoints.forEach(function (dataPoint) {
-		count++;
-		text1.value = count.toString();
-
 		var latlng = new google.maps.LatLng(dataPoint.latlng.lat, dataPoint.latlng.lng);
 		var pixelPoint = projection.fromLatLngToPoint(latlng);
 		var pixelX = Math.round((pixelPoint.x - sw.x) * scale);
 		var pixelY = Math.round((pixelPoint.y - ne.y) * scale);
-		// console.log(pixelX + ", " + pixelY);
 
 		if (pixelX >= -xOffsetOffScreen && pixelX < maxX
 			&& pixelY >= -yOffsetOffScreen && pixelY < maxY) {
-			var gridX = (pixelX / gridLengthPixels);
-			var gridY = (pixelY / gridLengthPixels);
-			gridDataCollection[(Math.floor(gridX))+1][Math.floor(gridY)+1] = (dataPoint.value);
+			var gridX = (pixelX / gridLengthPixels) + 1;
+			var gridY = (pixelY / gridLengthPixels) + 1;
+			gridDataCollection[(Math.floor(gridX))][Math.floor(gridY)].push(dataPoint.value);
 		}
 	});
 
 	console.log(gridDataCollection);
 
+	for (gridX=0; gridX< gridsAmountX+1; gridX++) {
+		for (gridY=0; gridY< gridsAmountY+1; gridY++) {
+			var values = gridDataCollection[gridX][gridY];
+
+			var count = values.length;
+			if (count === 0) {
+				gridDataCollection[gridX][gridY] = null;
+			} else {
+				var total = 0;
+				for (var index=0; index<count; index++) {
+					total += parseInt(gridDataCollection[gridX][gridY][index]);
+				}
+				var avg = total / count;
+				gridDataCollection[gridX][gridY] = avg.toFixed(2);
+			}
+		}
+	}
 }
