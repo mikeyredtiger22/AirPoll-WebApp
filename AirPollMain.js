@@ -283,16 +283,9 @@ function displayGrid(map) {
 
 	var gridsYPixels = [];
 	for (var yPixels = -yOffsetOffScreen; yPixels < heightPixels + gridLengthPixels; yPixels += gridLengthPixels) {
-		gridsYPixels.push(yPixels);
+		gridsYPixels.push(Math.round(yPixels));
 	}
 	var maxY = yPixels + gridLengthPixels;
-
-	// console.log(gridsXPixels);
-	// console.log(gridsYPixels);
-
-	//PIXELS FROM TOP LEFT
-
-	// console.log(allDataPoints);
 
 	//3D array! [X Position][Y Position][List of data in grid]
 	gridDataCollection = [];
@@ -327,9 +320,9 @@ function displayGrid(map) {
 
 	var gridIndexToLatLngBounds = [];
 
-	for (gridX=0; gridX< gridsAmountX+1; gridX++) {
+	for (gridX=0; gridX< gridsXPixels.length; gridX++) {
 		gridIndexToLatLngBounds[gridX] = [];
-		for (gridY=0; gridY< gridsAmountY+1; gridY++) {
+		for (gridY=0; gridY< gridsYPixels.length; gridY++) {
 			var gridBounds = pointToLatLng(projection, gridsXPixels[gridX], gridsYPixels[gridY], sw.x, ne.y, scale, gridLengthPixels);
 			gridIndexToLatLngBounds[gridX][gridY] = gridBounds;
 
@@ -358,40 +351,32 @@ function displayGrid(map) {
 		}
 	}
 
-	/*console.log(maxGridValue);
-	console.log(minGridValue);
-	console.log(sumOfGridValues);
-	console.log(totalGridValues);*/
-
-
-
-	for (gridX=0; gridX< gridsAmountX+1; gridX++) {
-		for (gridY = 0; gridY < gridsAmountY + 1; gridY++) {
-			drawRectangle(map, gridIndexToLatLngBounds[gridX][gridY]);
+	console.log(gridIndexToLatLngBounds);
+	for (gridX=0; gridX< gridsXPixels.length; gridX++) {
+		for (gridY=0; gridY< gridsYPixels.length; gridY++) {
+			drawRectangle(map, gridIndexToLatLngBounds[gridX][gridY], gridDataCollection[gridX][gridY]);
 		}
 	}
 }
 
 function pointToLatLng(projection, x, y, startX, startY, scale, gridLength) {
-	var ne = projection.fromPointToLatLng(new google.maps.Point((x/scale) + startX), (y/scale) + startY);
-	var sw = projection.fromPointToLatLng(new google.maps.Point((x+gridLength/scale) + startX), (y+gridLength/scale) + startY);
+	var nePoint = new google.maps.Point((x/scale) + startX, (y/scale) + startY);
+	var ne = projection.fromPointToLatLng(nePoint);
+	var swPoint = new google.maps.Point(((x+gridLength)/scale) + startX, ((y+gridLength)/scale) + startY);
+	var sw = projection.fromPointToLatLng(swPoint);
 
-	var bounds = new google.maps.LatLngBounds(sw, ne);
+	var bounds = new google.maps.LatLngBounds(ne, sw);
 	return bounds;
 }
 
-function drawRectangle(map, bounds) {
+function drawRectangle(map, bounds, value) {
 	var rectangle = new google.maps.Rectangle({
 		strokeColor: '#FF0000',
 		strokeOpacity: 0.8,
 		strokeWeight: 2,
 		fillColor: '#FF0000',
-		fillOpacity: 0.35,
+		fillOpacity: value/100,
 		map: map,
 		bounds: bounds
 	});
-}
-
-function drawSquareMarker(map, latlng) {
-
 }
