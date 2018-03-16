@@ -6,6 +6,7 @@ var dataPointCircles = [];
 var showDataPoints = true;
 var showDataCircles = true;
 var showDataGrid = false;
+var heatmap;
 
 
 /**
@@ -17,9 +18,9 @@ function initApp() {
 	var dataPointsDbRef = firebase.firestore().collection('datapoints');
 
 	var map = initMap();
-	var heatmap = initHeatmap(map);
+	heatmap = initHeatmap(map);
 
-	addMapClickListener(map, heatmap, dataPointsDbRef);
+	addMapClickListener(map, dataPointsDbRef);
 	addDataPointDbListener(dataPointsDbRef, map);
 	addFormButtonListeners(map);
 
@@ -43,10 +44,8 @@ function initMap() {
 }
 
 //Heatmap is only used to show where we have data
-function initHeatmap(map) {
-	var heatmap = new google.maps.visualization.HeatmapLayer();
-	heatmap.setMap(map);
-	return heatmap;
+function initHeatmap() {
+	return new google.maps.visualization.HeatmapLayer({radius: 0.001, dissipating: false});
 }
 
 function initFirebase() {
@@ -54,7 +53,7 @@ function initFirebase() {
 	};
 }
 
-function addMapClickListener(map, heatmap, dataPointsDbRef) {
+function addMapClickListener(map, dataPointsDbRef) {
 	map.addListener('click', function(mapLayer) {
 
 		var dataPoint = {
@@ -66,7 +65,6 @@ function addMapClickListener(map, heatmap, dataPointsDbRef) {
 
 		addNewDataPointClickToDb(dataPointsDbRef, dataPoint);
 		addMarkerToMap(map, dataPoint);
-		heatmap.getData().push(latlng); //hiding heatmap
 	});
 }
 
@@ -93,6 +91,7 @@ function addDataPointDbListener(dataPointsDbRef, map) {
 
 function addMarkerToMap(map, dataPoint) {
 	latlng = dataPoint.latlng;
+	heatmap.getData().push(new google.maps.LatLng(latlng.lat, latlng.lng));
 	var hue = (100 - dataPoint.value) * 2.4;
 	var colorString = "hsl(" + hue +", 100%, 50%)";
 	var marker = new google.maps.Marker({
@@ -144,72 +143,96 @@ function addFormButtonListeners(map) {
 
 	var viewTypeButton = document.getElementById('viewType');
 	viewTypeButton.onclick = function () {
-		if (viewTypeButton.innerText === 'Show Grid View') {
-			viewTypeButton.innerText = 'Show Data Points View';
-			showDataPoints = false;
-			showDataCircles = false;
-			dataPointMarkers.forEach(function (dataPointMarker) {
-				dataPointMarker.setVisible(false);
-			});
-			dataPointCircles.forEach(function (dataPointMarker) {
-				dataPointMarker.setVisible(false);
-			});
-			displayGrid(map)
+		if (viewTypeButton.innerText === 'Switch to Grid View') {
+			viewTypeButton.innerText = 'Switch to Data Points View';
+			hideDataPoints(true);
+			hideDataCircles(true);
+			hideHeatmap(true, map);
+
+			displayGrid(map);
 		} else {
-			viewTypeButton.innerText = 'Show Grid View';
-			showDataPoints = true;
-			showDataCircles = true;
-			dataPointMarkers.forEach(function (dataPointMarker) {
-				dataPointMarker.setVisible(true);
-			});
-			dataPointCircles.forEach(function (dataPointMarker) {
-				dataPointMarker.setVisible(true);
-			});
+			viewTypeButton.innerText = 'Switch to Grid View';
+			hideDataPoints(false);
+			hideDataCircles(false);
+			hideHeatmap(true, map);
 		}
 	};
 
 	var showPointsButton = document.getElementById('showPoints');
 	showPointsButton.onclick = function () {
 		if (showPointsButton.innerText === 'Show Data Points') {
-			showDataPoints = true;
-			showPointsButton.innerText = 'Hide Data Points';
-			dataPointMarkers.forEach(function (dataPointMarker) {
-				dataPointMarker.setVisible(true);
-			});
-			showPointsButton.classList.add('btn-primary');
-			showPointsButton.classList.remove('btn-outline-primary');
+			hideDataPoints(false);
 		} else {
-			showDataPoints = false;
-			showPointsButton.innerText = 'Show Data Points';
-			dataPointMarkers.forEach(function (dataPointMarker) {
-				dataPointMarker.setVisible(false);
-			});
-
-			showPointsButton.classList.remove('btn-primary');
-			showPointsButton.classList.add('btn-outline-primary');
+			hideDataPoints(true);
 		}
 	};
 
 	var showCirclesButton = document.getElementById('showCircles');
 	showCirclesButton.onclick = function () {
 		if (showCirclesButton.innerText === 'Show Data Circles') {
-			showDataCircles = true;
-			showCirclesButton.innerText = 'Hide Data Circles';
-			dataPointCircles.forEach(function (dataPointCircle) {
-				dataPointCircle.setVisible(true);
-			});
-			showCirclesButton.classList.add('btn-primary');
-			showCirclesButton.classList.remove('btn-outline-primary');
+			hideDataCircles(false);
 		} else {
-			showDataCircles = false;
-			showCirclesButton.innerText = 'Show Data Circles';
-			dataPointCircles.forEach(function (dataPointCircle) {
-				dataPointCircle.setVisible(false);
-			});
-			showCirclesButton.classList.remove('btn-primary');
-			showCirclesButton.classList.add('btn-outline-primary');
+			hideDataCircles(true);
 		}
 	};
+
+	var showHeatmapButton = document.getElementById('showHeatmap');
+	showHeatmapButton.onclick = function () {
+		if (showHeatmapButton.innerText === 'Show Heatmap') {
+			hideHeatmap(false, map);
+		} else {
+			hideHeatmap(true, map);
+		}
+	};
+}
+
+function hideDataPoints(hidden) {
+	var showPointsButton = document.getElementById('showPoints');
+	if (hidden) {
+		showPointsButton.innerText = 'Show Data Points';
+		showPointsButton.classList.remove('btn-primary');
+		showPointsButton.classList.add('btn-outline-primary');
+	} else {
+		showPointsButton.innerText = 'Hide Data Points';
+		showPointsButton.classList.remove('btn-outline-primary');
+		showPointsButton.classList.add('btn-primary');
+	}
+	showDataPoints = !hidden;
+	dataPointMarkers.forEach(function (dataPointMarker) {
+		dataPointMarker.setVisible(!hidden);
+	});
+}
+
+function hideDataCircles(hidden) {
+	var showCirclesButton = document.getElementById('showCircles');
+	if (hidden) {
+		showCirclesButton.innerText = 'Show Data Circles';
+		showCirclesButton.classList.remove('btn-primary');
+		showCirclesButton.classList.add('btn-outline-primary');
+	} else {
+		showCirclesButton.innerText = 'Hide Data Circles';
+		showCirclesButton.classList.remove('btn-outline-primary');
+		showCirclesButton.classList.add('btn-primary');
+	}
+	showDataCircles = !hidden;
+	dataPointCircles.forEach(function (dataPointCircle) {
+		dataPointCircle.setVisible(!hidden);
+	});
+}
+
+function hideHeatmap(hidden, map) {
+	var showHeatmapButton = document.getElementById('showHeatmap');
+	if (hidden) {
+		showHeatmapButton.innerText = 'Show Heatmap';
+		showHeatmapButton.classList.remove('btn-primary');
+		showHeatmapButton.classList.add('btn-outline-primary');
+		heatmap.setMap(null);
+	} else {
+		showHeatmapButton.innerText = 'Hide Heatmap';
+		showHeatmapButton.classList.remove('btn-outline-primary');
+		showHeatmapButton.classList.add('btn-primary');
+		heatmap.setMap(map);
+	}
 }
 
 function displayGrid(map) {
