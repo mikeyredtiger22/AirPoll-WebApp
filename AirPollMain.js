@@ -127,8 +127,7 @@ function drawCircle(latlng, map, colorString, opacity, radius) {
 			fillOpacity: opacity,
 			map: map,
 			center: latlng,
-			radius: radius,
-			visible: false
+			radius: radius
 		})
 	);
 }
@@ -152,11 +151,16 @@ function addFormButtonListeners() {
 			dataPointMarkers.forEach(function (dataPointMarker) {
 				dataPointMarker.setVisible(true);
 			});
+			showPointsButton.classList.add('btn-primary');
+			showPointsButton.classList.remove('btn-outline-primary');
 		} else {
 			showPointsButton.innerText = 'Show Data Points';
 			dataPointMarkers.forEach(function (dataPointMarker) {
 				dataPointMarker.setVisible(false);
 			});
+
+			showPointsButton.classList.remove('btn-primary');
+			showPointsButton.classList.add('btn-outline-primary');
 		}
 	};
 
@@ -167,11 +171,15 @@ function addFormButtonListeners() {
 			dataPointCircles.forEach(function (dataPointCircle) {
 				dataPointCircle.setVisible(true);
 			});
+			showCirclesButton.classList.add('btn-primary');
+			showCirclesButton.classList.remove('btn-outline-primary');
 		} else {
 			showCirclesButton.innerText = 'Show Data Circles';
 			dataPointCircles.forEach(function (dataPointCircle) {
 				dataPointCircle.setVisible(false);
 			});
+			showCirclesButton.classList.remove('btn-primary');
+			showCirclesButton.classList.add('btn-outline-primary');
 		}
 	};
 }

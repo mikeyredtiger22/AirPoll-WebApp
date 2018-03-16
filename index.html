@@ -18,49 +18,45 @@
             margin: 0;
             padding: 0;
         }
-        #form {
+        #formPanel {
             position: absolute;
             bottom: 10px;
             left: 10px;
+            width: auto;
             z-index: 99;
 
             background-color: #fff;
             border: 2px solid #fff;
             border-radius: 3px;
             box-shadow: 0 2px 6px rgba(0,0,0,.3);
-            cursor: pointer;
+            /*cursor: pointer;*/
             margin-bottom: 22px;
             text-align: center;
-            /*}
-        #formText {*/
-            color: rgb(25,25,25);
+
+            /*color: rgb(25,25,25);*/
             /*font-family: Roboto,Arial,sans-serif;
             font-size: 16px;
             line-height: 38px;*/
+            padding-top: 10px;
             padding-left: 15px;
-            padding-right: 5px;
-            padding-bottom: 10px;
+            padding-right: 15px;
         }
-        form  { display: table;      }
-        p     { display: table-row;  }
-        label { display: table-cell; margin: 10px; text-align: left}
-        input { display: table-cell; margin: 10px; }
 
         #showGrid {
             position: absolute;
-            bottom: 380px;
+            bottom: 500px;
             left: 10px;
             z-index: 99;
         }
         #showPoints {
             position: absolute;
-            bottom: 340px;
+            bottom: 450px;
             left: 10px;
             z-index: 99;
         }
         #showCircles {
             position: absolute;
-            bottom: 300px;
+            bottom: 400px;
             left: 10px;
             z-index: 99;
         }
@@ -71,28 +67,40 @@
 
 <div id="wrapper">
     <div id="map"></div>
-    <button id="showGrid" >Show Data Grid</button>
-    <button id="showPoints" >Show Data Points</button>
-    <button id="showCircles" >Show Data Circles</button>
-    <div id="form">
-        <b style="font-size: 20px">Data Point</b>
+    <button id="showGrid" type="button" class="btn btn-outline-primary">Show Data Grid</button>
+    <button id="showPoints" type="button" class="btn btn-primary">Hide Data Points</button>
+    <button id="showCircles" type="button" class="btn btn-primary">Hide Data Circles</button>
+
+
+    <div id="formPanel">
         <form>
-            <p>
-                <label for="date">Date</label>
-                <input id="date" type="text">
-            </p>
-            <p>
-                <label for="time">Time</label>
-                <input id="time" type="text">
-            </p>
-            <p>
-                <label for="value">Value</label>
-                <input id="value" type="text">
-            </p>
-            <p>
-                <label for="user">User</label>
-                <input id="user" type="text" value="Test">
-            </p>
+            <label class="col-lg-6"><b>Data Point</b></label>
+            <div class="form-group row">
+                <label for="date" class="col-sm-2 col-form-label">Date</label>
+                <div class="col-sm">
+                    <input class="form-control form-control-sm" id="date">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="time" class="col-sm-2 col-form-label">Time</label>
+                <div class="col-sm">
+                    <input class="form-control form-control-sm" id="time">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="value" class="col-sm-2 col-form-label">Value</label>
+                <div class="col-sm">
+                    <input class="form-control form-control-sm" id="value">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="user" class="col-sm-2 col-form-label">User</label>
+                <div class="col-sm">
+                    <input class="form-control form-control-sm" id="user">
+                </div>
+            </div>
+
+
         </form>
     </div>
 </div>
