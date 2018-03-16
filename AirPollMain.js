@@ -1,5 +1,5 @@
 
-
+var allDataPoints = [];
 var dataPointMarkers = [];
 var dataPointCircles = [];
 
@@ -19,11 +19,12 @@ function initApp() {
 	firebase.initializeApp(config);
 	var dataPointsDbRef = firebase.firestore().collection('datapoints');
 
+	displayGrid(map);
 	addMapClickListener(map, heatmap, dataPointsDbRef);
 	addDataPointDbListener(dataPointsDbRef, map);
 	addFormButtonListeners();
 
-	displayGrid(map);
+
 }
 
 function initMap() {
@@ -63,6 +64,7 @@ function addMapClickListener(map, heatmap, dataPointsDbRef) {
 			value: Math.floor((Math.random() * 100)).toString(),
 			date: new Date().toUTCString()
 		};
+		allDataPoints.push(dataPoint);
 
 		addNewDataPointClickToDb(dataPointsDbRef, dataPoint);
 		addMarkerToMap(map, dataPoint);
@@ -81,6 +83,7 @@ function addNewDataPointClickToDb(dataPointsDbRef, dataPoint) {
 function addDataPointDbListener(dataPointsDbRef, map) {
 	dataPointsDbRef.get().then(function(dataPoints) {
 		dataPoints.forEach(function(dataPoint) {
+			allDataPoints.push(dataPoint.data());
 			addMarkerToMap(map, dataPoint.data());
 		});
 	});
@@ -221,36 +224,76 @@ function displayGrid(map) {
 
 
 		//Step 3: Create grid objects with LatLng coordinates
-		var leftOffsetPixels = 0.5 * (widthPixels % gridLengthPixels);
-		var topOffsetPixels = 0.5 * (heightPixels % gridLengthPixels);
+		var xOffsetOffScreen = gridLengthPixels - (0.5 * (widthPixels % gridLengthPixels));
+		var yOffsetOffScreen = gridLengthPixels - (0.5 * (heightPixels % gridLengthPixels));
 
-		var gridsAmountX = Math.floor(widthPixels / gridLengthPixels);
-		var gridsAmountY = Math.floor(heightPixels / gridLengthPixels);
+		var gridsAmountX = 2 + Math.floor(widthPixels / gridLengthPixels);
+		var gridsAmountY = 2 + Math.floor(heightPixels / gridLengthPixels);
 
 
 		text3.value = "Grids x :" + gridsAmountX;
 		text4.value = "Grids y :" + gridsAmountY;
 
-		var grids = []; //2D array
 
-		for (x = 0; x < gridsAmountX; x++) {
+		//Using Pixels for grids because converting each grid coordinate to latlng and comparing each data point to a
+		//list of lats and lngs takes much longer than finding pixel coordinate of datapoint! (then grid is easy to find)
+
+		var gridsXPixels = [];
+		for (var xPixels = -xOffsetOffScreen; xPixels < widthPixels + gridLengthPixels; xPixels += gridLengthPixels) {
+			gridsXPixels.push(xPixels);
+		}
+		var maxX = xPixels + gridLengthPixels;
+
+		var gridsYPixels = [];
+		for (var yPixels = -yOffsetOffScreen; yPixels < heightPixels + gridLengthPixels; yPixels += gridLengthPixels) {
+			gridsYPixels.push(yPixels);
+		}
+		var maxY = yPixels + gridLengthPixels;
+
+		// console.log(gridsXPixels);
+		// console.log(gridsYPixels);
+
+		//PIXELS FROM TOP LEFT
+
+
+		var count = 0;
+		allDataPoints.forEach(function (dataPoint) {
+			count++;
+			text1.value = count.toString();
+
+			var latlng = new google.maps.LatLng(dataPoint.latlng.lat, dataPoint.latlng.lng);
+			var pixelPoint = projection.fromLatLngToPoint(latlng);
+			var pixelX = Math.round((pixelPoint.x - sw.x) * scale);
+			var pixelY = Math.round((pixelPoint.y - ne.y) * scale);
+			console.log(pixelX + ", " + pixelY);
+
+			if ()
+
+
+		});
+
+
+
+
+		/*for (x = 0; x < gridsAmountX; x++) {
 			var pixelsX = leftOffsetPixels + (x * gridLengthPixels);
 			grids[x] = [];
 			for (y = 0; y < gridsAmountY; y++) {
 				var pixelsY = topOffsetPixels + (y * gridLengthPixels);
 				var latlng = projection.fromPointToLatLng({x: pixelsX, y: pixelsY});
-				console.log(x + ", " + y + " --> " + pixelsX + ", " + pixelsY);
+				// console.log(x + ", " + y + " --> " + pixelsX + ", " + pixelsY);
 				grids[x][y] = latlng.toJSON();
 			}
-		}
-		console.log(grids);
+		}*/
+		// console.log(grids);
 
 
-
-
-
-
-
-
+		//Step 4: find all points in bounds
+		//TODO: create grids on edge of screen - increases bounds outside of screen
+		/*console.log(allDataPoints);
+		allDataPoints.forEach(function(dataPoint) {
+			if (bounds.contains(dataPoint.latlng)) {
+			}
+		});*/
 	});
 }
