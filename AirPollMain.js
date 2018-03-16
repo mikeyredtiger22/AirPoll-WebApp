@@ -197,15 +197,14 @@ function addFormButtonListeners() {
 function displayGrid(map) {
 
 	map.addListener('tilesloaded', function() {
-
-		//First step: find biggest square (in pixels) on map
-		var bounds = map.getBounds();
-		var projection = map.getProjection();
-
 		var text1 = document.getElementById('date');
 		var text2 = document.getElementById('time');
 		var text3 = document.getElementById('value');
 		var text4 = document.getElementById('user');
+
+		//Step1: find biggest square (in pixels) on map
+		var bounds = map.getBounds();
+		var projection = map.getProjection();
 
 		var ne = projection.fromLatLngToPoint(bounds.getNorthEast());
 		var sw = projection.fromLatLngToPoint(bounds.getSouthWest());
@@ -216,13 +215,39 @@ function displayGrid(map) {
 		var heightPixels = (sw.y - ne.y) * scale;
 
 		var totalSquareLengthPixels = Math.min(widthPixels, heightPixels);
-		text1.value = totalSquareLengthPixels;
 
-		var gridLengthPixes = totalSquareLengthPixels / 10; //Eventually changeable by slider
-		text2.value = gridLengthPixes;
+		//Step 2: find grid size in pixels
+		var gridLengthPixels = Math.round(totalSquareLengthPixels / 10); //Eventually changeable by slider
 
-		var centerXPixels = widthPixels/2;
-		var centerYPixels = heightPixels/2;
+
+		//Step 3: Create grid objects with LatLng coordinates
+		var leftOffsetPixels = 0.5 * (widthPixels % gridLengthPixels);
+		var topOffsetPixels = 0.5 * (heightPixels % gridLengthPixels);
+
+		var gridsAmountX = Math.floor(widthPixels / gridLengthPixels);
+		var gridsAmountY = Math.floor(heightPixels / gridLengthPixels);
+
+
+		text3.value = "Grids x :" + gridsAmountX;
+		text4.value = "Grids y :" + gridsAmountY;
+
+		var grids = []; //2D array
+
+		for (x = 0; x < gridsAmountX; x++) {
+			var pixelsX = leftOffsetPixels + (x * gridLengthPixels);
+			grids[x] = [];
+			for (y = 0; y < gridsAmountY; y++) {
+				var pixelsY = topOffsetPixels + (y * gridLengthPixels);
+				var latlng = projection.fromPointToLatLng({x: pixelsX, y: pixelsY});
+				console.log(x + ", " + y + " --> " + pixelsX + ", " + pixelsY);
+				grids[x][y] = latlng.toJSON();
+			}
+		}
+		console.log(grids);
+
+
+
+
 
 
 
