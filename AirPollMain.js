@@ -19,7 +19,7 @@ function initApp() {
 	addDataPointDbListener(dataPointsDbRef, map);
 	addFormButtonListeners();
 
-	displayGrid();
+	displayGrid(map);
 }
 
 function initMap() {
@@ -77,7 +77,7 @@ function addNewDataPointClickToDb(dataPointsDbRef, dataPoint) {
 function addDataPointDbListener(dataPointsDbRef, map) {
 	dataPointsDbRef.get().then(function(dataPoints) {
 		dataPoints.forEach(function(dataPoint) {
-			addMarkerToMap(map, dataPoint.data())
+			addMarkerToMap(map, dataPoint.data());
 		});
 	});
 
@@ -173,4 +173,34 @@ function addFormButtonListeners() {
 			});
 		}
 	};
+}
+
+function displayGrid(map) {
+
+	map.addListener('tilesloaded', function() {
+
+		//First step: find biggest square (in pixels) on map
+		var bounds = map.getBounds();
+		var projection = map.getProjection();
+
+		var text1 = document.getElementById('date');
+		var text2 = document.getElementById('time');
+		var text3 = document.getElementById('value');
+		var text4 = document.getElementById('user');
+
+		var ne = projection.fromLatLngToPoint(bounds.getNorthEast());
+		var sw = projection.fromLatLngToPoint(bounds.getSouthWest());
+
+		var scale = Math.pow(2, map.getZoom());
+
+		var widthPixels = (ne.x - sw.x) * scale;
+		var heightPixels = (sw.y - ne.y) * scale;
+
+		var totalSquareLengthPixels = Math.min(widthPixels, heightPixels);
+		text1.value = totalSquareLength;
+
+		var gridLengthPixes = totalSquareLengthPixels / 10; //Eventually changeable by slider
+
+
+	});
 }
