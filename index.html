@@ -22,7 +22,6 @@
         #viewPanel, #dataPointPanel {
             position: absolute;
             left: 10px;
-            width: 325px;
 
             background-color: rgba(255, 255, 255, 0.51);
             border: 2px solid rgba(255, 255, 255, 0.5);
@@ -31,7 +30,8 @@
             text-align: center;
         }
         #viewPanel {
-            bottom: 370px;
+            bottom: 430px;
+            width: 355px;
             padding-top: 10px;
             padding-left: 15px;
             padding-right: 15px;
@@ -50,7 +50,7 @@
 <div id="wrapper">
     <div id="map"></div>
 
-    <div id="viewPanel" class="">
+    <div id="viewPanel">
         <label class="col-lg-6 flex-column"><b>View Type</b></label>
         <button id="viewType" type="button" class="btn btn-primary m-2">Switch to Grid View</button>
         <button id="showPoints" type="button" class="btn btn-sm btn-primary m-1">Hide Data Points</button>
