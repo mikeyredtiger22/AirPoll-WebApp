@@ -2,6 +2,7 @@
 var allDataPoints = [];
 var dataPointMarkers = [];
 var dataPointCircles = [];
+var dataGrid = [];
 
 var showDataPoints = true;
 var showDataCircles = true;
@@ -45,7 +46,7 @@ function initMap() {
 
 //Heatmap is only used to show where we have data
 function initHeatmap() {
-	return new google.maps.visualization.HeatmapLayer({radius: 0.001, dissipating: false});
+	return new google.maps.visualization.HeatmapLayer({radius: 0.005, dissipating: false});
 }
 
 function initFirebase() {
@@ -155,6 +156,7 @@ function addFormButtonListeners(map) {
 			hideDataPoints(false);
 			hideDataCircles(false);
 			hideHeatmap(true, map);
+			hideDataGrid(true);
 		}
 	};
 
@@ -235,7 +237,14 @@ function hideHeatmap(hidden, map) {
 	}
 }
 
+function hideDataGrid(hidden) {
+	dataGrid.forEach(function (rectangle) {
+		rectangle.setVisible(!hidden);
+	})
+}
+
 function displayGrid(map) {
+	dataGrid = [];
 
 	var text1 = document.getElementById('date');
 	var text2 = document.getElementById('time');
@@ -370,7 +379,7 @@ function drawRectangle(map, bounds, value) {
 	if (value != null) {
 		var hue = (100 - value) * 1.2;
 		var colorString = "hsl(" + hue + ", 100%, 50%)";
-		var rectangle = new google.maps.Rectangle({
+		dataGrid.push(new google.maps.Rectangle({
 			strokeColor: colorString,
 			strokeOpacity: 0.8,
 			strokeWeight: 2,
@@ -378,6 +387,6 @@ function drawRectangle(map, bounds, value) {
 			fillOpacity: 0.4,
 			map: map,
 			bounds: bounds
-		});
+		}));
 	}
 }

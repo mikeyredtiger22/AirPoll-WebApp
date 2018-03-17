@@ -31,7 +31,7 @@
         }
         #viewPanel {
             bottom: 430px;
-            width: 355px;
+            /*width: 355px;*/
             padding-top: 10px;
             padding-left: 15px;
             padding-right: 15px;
@@ -50,12 +50,32 @@
 <div id="wrapper">
     <div id="map"></div>
 
-    <div id="viewPanel">
-        <label class="col-lg-6 flex-column"><b>View Type</b></label>
-        <button id="viewType" type="button" class="btn btn-primary m-2">Switch to Grid View</button>
-        <button id="showPoints" type="button" class="btn btn-sm btn-primary m-1">Hide Data Points</button>
-        <button id="showCircles" type="button" class="btn btn-sm btn-primary m-1">Hide Data Circles</button>
-        <button id="showHeatmap" type="button" class="btn btn-sm btn-outline-primary m-1">Show Heatmap</button>
+    <div id="viewPanel" class="col-md-2.5">
+        <div class="row justify-content-start">
+            <div class="col-auto">
+                <label><b>View Type</b></label>
+            </div>
+        </div>
+        <div class="row justify-content-start">
+            <div class="col-auto">
+                <button id="viewType" type="button" class="btn btn-primary mx-1 my-2">Switch to Grid View</button>
+            </div>
+        </div>
+        <div class="row justify-content-start">
+            <div class="col-auto">
+                <button id="showPoints" type="button" class="btn btn-sm btn-primary m-1">Hide Data Points</button>
+            </div>
+        </div>
+        <div class="row justify-content-start">
+            <div class="col-auto">
+                <button id="showCircles" type="button" class="btn btn-sm btn-primary m-1">Hide Data Circles</button>
+            </div>
+        </div>
+        <div class="row justify-content-start">
+            <div class="col-auto">
+                <button id="showHeatmap" type="button" class="btn btn-sm btn-outline-primary m-1">Show Heatmap</button>
+            </div>
+        </div>
     </div>
 
     <div id="dataPointPanel">
