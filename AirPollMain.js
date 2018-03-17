@@ -5,7 +5,7 @@ var dataPointCircles = [];
 var dataGrid = [];
 
 var showDataPoints = true;
-var showDataCircles = false;
+var showDataCircles = true;
 var showDataGrid = false;
 var heatmap;
 
@@ -154,7 +154,7 @@ function addFormButtonListeners(map) {
 		} else {
 			viewTypeButton.innerText = 'Switch to Grid View';
 			hideDataPoints(false);
-			hideDataCircles(true);
+			hideDataCircles(false);
 			hideHeatmap(true, map);
 			hideDataGrid(true);
 		}
@@ -266,7 +266,7 @@ function displayGrid(map) {
 	var totalSquareLengthPixels = Math.min(widthPixels, heightPixels);
 
 	//Step 2: find grid size in pixels
-	var gridLengthPixels = Math.round(totalSquareLengthPixels / 10); //Eventually changeable by slider
+	var gridLengthPixels = Math.round(totalSquareLengthPixels / 20); //Eventually changeable by slider
 
 
 	//Step 3: Create grid data structure
@@ -323,9 +323,9 @@ function displayGrid(map) {
 
 	var gridIndexToLatLngBounds = [];
 
-	for (gridX=0; gridX< gridsXPixels.length; gridX++) {
+	for (gridX=0; gridX< gridsXPixels.length + 1; gridX++) {
 		gridIndexToLatLngBounds[gridX] = [];
-		for (gridY=0; gridY< gridsYPixels.length; gridY++) {
+		for (gridY=0; gridY< gridsYPixels.length + 1; gridY++) {
 			var gridBounds = pointToLatLng(projection, gridsXPixels[gridX], gridsYPixels[gridY], sw.x, ne.y, scale, gridLengthPixels);
 			gridIndexToLatLngBounds[gridX][gridY] = gridBounds;
 
@@ -354,10 +354,61 @@ function displayGrid(map) {
 		}
 	}
 
-	for (gridX=0; gridX< gridsXPixels.length; gridX++) {
-		for (gridY=0; gridY< gridsYPixels.length; gridY++) {
+	// console.log(gridDataCollection);
+
+	/*for (gridX=0; gridX< gridsXPixels.length + 1; gridX++) {
+		for (gridY=0; gridY< gridsYPixels.length + 1; gridY++) {
 			drawRectangle(map, gridIndexToLatLngBounds[gridX][gridY], gridDataCollection[gridX][gridY]);
 		}
+	}*/
+
+	var gridBlendedDataCollection = blendGrid(gridDataCollection);
+
+	console.log(gridBlendedDataCollection);
+	for (gridX=0; gridX< gridsXPixels.length-1; gridX++) {
+		for (gridY=0; gridY< gridsYPixels.length-1; gridY++) {
+			drawRectangle(map, gridIndexToLatLngBounds[gridX+1][gridY+1], gridBlendedDataCollection[gridX][gridY]);
+		}
+	}
+}
+
+function blendGrid(gridDataCollection) {
+	var gridBlendedDataCollection = [];
+	for (var gridX=1; gridX < gridDataCollection.length -1; gridX++) {
+		gridBlendedDataCollection[gridX-1] = [];
+		for (var gridY=1; gridY < gridDataCollection[gridX].length -1; gridY++) {
+			var total = 0; // total values for grid of 3 x 3
+			var count = 0;
+
+
+			for (var xIndex=gridX-1; xIndex<=gridX+1;xIndex++){
+				for (var yIndex=gridY-1; yIndex<=gridY+1;yIndex++){
+					var val = gridDataCollection[xIndex][yIndex];
+					if (val != null) {
+						count += parseInt(1);
+						total += parseFloat(val);
+					}
+				}
+			}
+
+			var dontShowGrid = ((count < 3) && (gridDataCollection[gridX][gridY] == null));
+			if (dontShowGrid) {
+				gridBlendedDataCollection[gridX-1][gridY-1] = null;
+			} else {
+				var avg = total / count;
+				gridBlendedDataCollection[gridX-1][gridY-1] = avg;
+			}
+		}
+	}
+
+	return gridBlendedDataCollection;
+}
+
+function blendOperation(gridValues, x, y, count, total) {
+	var val = gridValues[x][y];
+	if (!isNaN(val)) {
+		count += parseInt(1);
+		total += parseInt(val);
 	}
 }
 
