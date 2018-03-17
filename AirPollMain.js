@@ -5,7 +5,7 @@ var dataPointCircles = [];
 var dataGrid = [];
 
 var showDataPoints = true;
-var showDataCircles = true;
+var showDataCircles = false;
 var showDataGrid = false;
 var heatmap;
 
@@ -93,7 +93,7 @@ function addDataPointDbListener(dataPointsDbRef, map) {
 function addMarkerToMap(map, dataPoint) {
 	latlng = dataPoint.latlng;
 	heatmap.getData().push(new google.maps.LatLng(latlng.lat, latlng.lng));
-	var hue = (100 - dataPoint.value) * 1.2;
+	var hue = (100 - dataPoint.value) * 0.6;
 	var colorString = "hsl(" + hue +", 100%, 50%)";
 	var marker = new google.maps.Marker({
 		position: latlng,
@@ -120,9 +120,9 @@ function addMarkerToMap(map, dataPoint) {
 		document.getElementById('value').value = dataPoint.value;
 	});
 
-	drawCircle(latlng, map, colorString, 0.5, 10);
-	drawCircle(latlng, map, colorString, 0.3, 20);
-	drawCircle(latlng, map, colorString, 0.1, 40);
+	drawCircle(latlng, map, colorString, 0.5, 50);
+	drawCircle(latlng, map, colorString, 0.3, 100);
+	drawCircle(latlng, map, colorString, 0.1, 200);
 }
 
 function drawCircle(latlng, map, colorString, opacity, radius) {
@@ -154,7 +154,7 @@ function addFormButtonListeners(map) {
 		} else {
 			viewTypeButton.innerText = 'Switch to Grid View';
 			hideDataPoints(false);
-			hideDataCircles(false);
+			hideDataCircles(true);
 			hideHeatmap(true, map);
 			hideDataGrid(true);
 		}
@@ -274,11 +274,7 @@ function displayGrid(map) {
 	var yOffsetOffScreen = gridLengthPixels + (0.5 * (heightPixels % gridLengthPixels));
 
 	var gridsAmountX = 3 + Math.round(widthPixels / gridLengthPixels);
-	var gridsAmountY = 3 + Math.round(heightPixels / gridLengthPixels);
-
-
-	text3.value = "Grids x :" + gridsAmountX;
-	text4.value = "Grids y :" + gridsAmountY;
+	var gridsAmountY = 3 + Math.round(heightPixels / gridLengthPixels); //todo recalculate
 
 
 	//Using Pixels for grids because converting each grid coordinate to latlng and comparing each data point to a
@@ -377,14 +373,12 @@ function pointToLatLng(projection, x, y, startX, startY, scale, gridLength) {
 
 function drawRectangle(map, bounds, value) {
 	if (value != null) {
-		var hue = (100 - value) * 1.2;
+		var hue = (100 - value) * 0.6;
 		var colorString = "hsl(" + hue + ", 100%, 50%)";
 		dataGrid.push(new google.maps.Rectangle({
-			strokeColor: colorString,
-			strokeOpacity: 0.8,
-			strokeWeight: 2,
+			strokeWeight: 0,
 			fillColor: colorString,
-			fillOpacity: 0.4,
+			fillOpacity: 0.7,
 			map: map,
 			bounds: bounds
 		}));
