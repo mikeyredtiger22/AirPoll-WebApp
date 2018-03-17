@@ -92,7 +92,7 @@ function addDataPointDbListener(dataPointsDbRef, map) {
 function addMarkerToMap(map, dataPoint) {
 	latlng = dataPoint.latlng;
 	heatmap.getData().push(new google.maps.LatLng(latlng.lat, latlng.lng));
-	var hue = (100 - dataPoint.value) * 2.4;
+	var hue = (100 - dataPoint.value) * 1.2;
 	var colorString = "hsl(" + hue +", 100%, 50%)";
 	var marker = new google.maps.Marker({
 		position: latlng,
@@ -261,8 +261,8 @@ function displayGrid(map) {
 
 
 	//Step 3: Create grid data structure
-	var xOffsetOffScreen = gridLengthPixels - (0.5 * (widthPixels % gridLengthPixels));
-	var yOffsetOffScreen = gridLengthPixels - (0.5 * (heightPixels % gridLengthPixels));
+	var xOffsetOffScreen = gridLengthPixels + (0.5 * (widthPixels % gridLengthPixels));
+	var yOffsetOffScreen = gridLengthPixels + (0.5 * (heightPixels % gridLengthPixels));
 
 	var gridsAmountX = 3 + Math.round(widthPixels / gridLengthPixels);
 	var gridsAmountY = 3 + Math.round(heightPixels / gridLengthPixels);
@@ -277,7 +277,7 @@ function displayGrid(map) {
 
 	var gridsXPixels = [];
 	for (var xPixels = -xOffsetOffScreen; xPixels < widthPixels + gridLengthPixels; xPixels += gridLengthPixels) {
-		gridsXPixels.push(xPixels);
+		gridsXPixels.push(Math.round(xPixels));
 	}
 	var maxX = xPixels + gridLengthPixels;
 
@@ -304,13 +304,11 @@ function displayGrid(map) {
 
 		if (pixelX >= -xOffsetOffScreen && pixelX < maxX
 			&& pixelY >= -yOffsetOffScreen && pixelY < maxY) {
-			var gridX = (pixelX / gridLengthPixels) + 1;
-			var gridY = (pixelY / gridLengthPixels) + 1;
+			var gridX = ((pixelX + xOffsetOffScreen) / gridLengthPixels);
+			var gridY = ((pixelY + yOffsetOffScreen) / gridLengthPixels);
 			gridDataCollection[(Math.floor(gridX))][Math.floor(gridY)].push(dataPoint.value);
 		}
 	});
-
-	console.log(gridDataCollection);
 
 	var maxGridValue = 0;
 	var minGridValue = 100;
@@ -351,7 +349,6 @@ function displayGrid(map) {
 		}
 	}
 
-	console.log(gridIndexToLatLngBounds);
 	for (gridX=0; gridX< gridsXPixels.length; gridX++) {
 		for (gridY=0; gridY< gridsYPixels.length; gridY++) {
 			drawRectangle(map, gridIndexToLatLngBounds[gridX][gridY], gridDataCollection[gridX][gridY]);
@@ -370,13 +367,17 @@ function pointToLatLng(projection, x, y, startX, startY, scale, gridLength) {
 }
 
 function drawRectangle(map, bounds, value) {
-	var rectangle = new google.maps.Rectangle({
-		strokeColor: '#FF0000',
-		strokeOpacity: 0.8,
-		strokeWeight: 2,
-		fillColor: '#FF0000',
-		fillOpacity: value/100,
-		map: map,
-		bounds: bounds
-	});
+	if (value != null) {
+		var hue = (100 - value) * 1.2;
+		var colorString = "hsl(" + hue + ", 100%, 50%)";
+		var rectangle = new google.maps.Rectangle({
+			strokeColor: colorString,
+			strokeOpacity: 0.8,
+			strokeWeight: 2,
+			fillColor: colorString,
+			fillOpacity: 0.4,
+			map: map,
+			bounds: bounds
+		});
+	}
 }
