@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.html",
   "scripts": {
-    "webpack": "webpack"
+    "webpack": "webpack --display-error-details"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
