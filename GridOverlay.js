@@ -1,19 +1,20 @@
-// class GridOverlay {
-let dataGrid = [];
-let map;
 
-function setGridOverlayMap(map) {
-  this.map = map;
+let map;
+let allDataPoints;
+let dataGrid = [];
+
+function initGridOverlay(mapObject, dataPoints) {
+  map = mapObject;
+  allDataPoints = dataPoints;
 }
 
-function hideDataGrid(hidden) {
+function hideDataGrid() {
   dataGrid.forEach(function (rectangle) {
-    rectangle.setVisible(!hidden);
+    rectangle.setVisible(false);
   });
 }
 
 function displayGrid() {
-  let dataGrid = [];
 
   //Step1: find biggest square (in pixels) on map
   let bounds = map.getBounds();
@@ -130,7 +131,7 @@ function displayGrid() {
 
   let gridBlendedDataCollection = blendGrid(gridDataCollection);
 
-  console.log(gridBlendedDataCollection);
+  // console.log(gridBlendedDataCollection);
   for (let gridX = 0; gridX < gridsXPixels.length - 1; gridX++) {
     for (let gridY = 0; gridY < gridsYPixels.length - 1; gridY++) {
       drawRectangle(map, gridIndexToLatLngBounds[gridX + 1][gridY + 1], gridBlendedDataCollection[gridX][gridY]);
@@ -204,7 +205,7 @@ function drawRectangle(map, bounds, value) {
 
 
 export {
-  setGridOverlayMap,
+  initGridOverlay,
   hideDataGrid,
   displayGrid,
 }

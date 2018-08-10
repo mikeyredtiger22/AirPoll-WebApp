@@ -1,4 +1,5 @@
 import { initButtonEventHandler } from './ButtonEventHandler';
+import { displayGrid, hideDataGrid, initGridOverlay } from './GridOverlay';
 
 let map;
 let dataPoints;
@@ -13,16 +14,28 @@ let showDataCircleMarkers = false;
 let showDataGridOverlay = false;
 let heatmap;
 
-function initDVController(mapObject) {
+function initDVController(mapObject, dataPoints) {
+  allDataPoints = dataPoints.map(dataPoint => dataPoint.data());
   map = mapObject;
   heatmap = new google.maps.visualization.HeatmapLayer({radius: 0.005, dissipating: false});
+
   initButtonEventHandler(showDataGrid, showDataCircles, showDataPoints, showDensityHeatmap);
+  initDataCirclesPointsAndHeatmap();
+  initGridOverlay(map, allDataPoints);
+}
+
+function initDataCirclesPointsAndHeatmap() {
+  allDataPoints.forEach(function(dataPoint) {
+    addMarkerToMap(dataPoint);
+  });
 }
 
 function showDataGrid(show) {
-  // dataGrid.forEach(function (rectangle) {
-  //   rectangle.setVisible(show);
-  // });
+  if (show) {
+    displayGrid();
+  } else {
+    hideDataGrid();
+  }
 }
 
 function showDataCircles(show) {
@@ -35,6 +48,7 @@ function showDataPoints(show) {
   showDataPoints = show;
   dataPointMarkers.forEach(function (dataPointMarker) {
     dataPointMarker.setVisible(show);
+    // dataPointMarker.setMap(show ? map : null);
   });
 }
 
@@ -42,7 +56,8 @@ function showDensityHeatmap(show) {
   heatmap.setMap(show ? map : null);
 }
 
-function addMarkerToMap(map, dataPoint) {
+function addMarkerToMap(dataPoint) {
+  // todo split up
   const latlng = dataPoint.latlng;
   heatmap.getData().push(new google.maps.LatLng(latlng.lat, latlng.lng));
   const hue = (100 - dataPoint.value) * 0.6;

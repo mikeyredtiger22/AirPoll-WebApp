@@ -3,7 +3,6 @@ let showDataCircles;
 let showDataPoints;
 let showDensityHeatmap;
 
-
 let showDataGridVal;
 let showDataCirclesVal;
 let showDataPointsVal;
@@ -17,7 +16,6 @@ function initButtonEventHandler(showDataGridM, showDataCirclesM, showDataPointsM
 
   addFormButtonListeners();
 }
-
 
 function addFormButtonListeners() {
 
@@ -39,15 +37,8 @@ function addFormButtonListeners() {
   };
 
   showPointsButton.onclick = function () {
-    if (showDataPointsVal) {
-      showPointsButton.innerText = 'Show Data Points';
-      showPointsButton.classList.remove('btn-primary');
-      showPointsButton.classList.add('btn-outline-primary');
-    } else {
-      showPointsButton.innerText = 'Hide Data Points';
-      showPointsButton.classList.remove('btn-outline-primary');
-      showPointsButton.classList.add('btn-primary');
-    }
+    styleButton(showPointsButton, !showDataPointsVal);
+    showPointsButton.innerText = showDataPointsVal ? 'Show Data Points' : 'Hide Data Points';
     showDataPointsVal =! showDataPointsVal;
     showDataPoints(showDataPointsVal);
   };
@@ -60,16 +51,9 @@ function addFormButtonListeners() {
   };
 
   showHeatmapButton.onclick = function () {
-    if (showDensityHeatmapVal) {
-      showHeatmapButton.innerText = 'Show Heatmap';
-      showHeatmapButton.classList.remove('btn-primary');
-      showHeatmapButton.classList.add('btn-outline-primary');
-    } else {
-      showHeatmapButton.innerText = 'Hide Heatmap';
-      showHeatmapButton.classList.remove('btn-outline-primary');
-      showHeatmapButton.classList.add('btn-primary');
-    }
-    showDensityHeatmapVal = ! showDensityHeatmapVal;
+    styleButton(showHeatmapButton, !showDensityHeatmapVal);
+    showHeatmapButton.innerText = showDensityHeatmapVal ? 'Show Density Heatmap' : 'Hide Density Heatmap';
+    showDensityHeatmapVal =! showDensityHeatmapVal;
     showDensityHeatmap(showDensityHeatmapVal);
   };
 }

@@ -100,33 +100,18 @@ var _FirebaseCredentials = __webpack_require__(/*! ./FirebaseCredentials */ "./F
 
 var _DataVisualisationController = __webpack_require__(/*! ./DataVisualisationController */ "./DataVisualisationController.js");
 
-var allDataPoints = [];
-// import { addFormButtonListeners } from './ButtonEventHandler';
-
-var dataPointMarkers = [];
-var dataPointCircles = [];
-var dataGrid = [];
-
-var showDataPoints = true;
-var showDataCircles = false;
-var showDataGrid = false;
-var heatmap = void 0;
-
-/**
- * Creates a map object with a click listener and a heatmap.
- */
 function initApp() {
   var config = (0, _FirebaseCredentials.firebaseCredentials)(); //Firebase API keys
   firebase.initializeApp(config);
   var dataPointsDbRef = firebase.firestore().collection('datapoints');
 
   var map = initMap();
-  heatmap = initHeatmap(map);
 
-  // addMapClickListener(map, dataPointsDbRef);
-  addDataPointDbListener(dataPointsDbRef, map);
-  // addFormButtonListeners(map);
-  (0, _DataVisualisationController.initDVController)(map);
+  addMapClickListener(map, dataPointsDbRef);
+
+  getDataPointsFromDB(dataPointsDbRef, function (dataPoints) {
+    (0, _DataVisualisationController.initDVController)(map, dataPoints);
+  });
 }
 
 window.initApp = initApp;
@@ -148,10 +133,6 @@ function initMap() {
   });
 }
 
-function initHeatmap() {
-  return new google.maps.visualization.HeatmapLayer({ radius: 0.005, dissipating: false });
-}
-
 function addMapClickListener(map, dataPointsDbRef) {
   map.addListener('click', function (mapLayer) {
 
@@ -160,10 +141,8 @@ function addMapClickListener(map, dataPointsDbRef) {
       value: Math.floor(Math.random() * 100).toString(),
       date: new Date().toUTCString()
     };
-    allDataPoints.push(dataPoint);
 
     addNewDataPointClickToDb(dataPointsDbRef, dataPoint);
-    (0, _DataVisualisationController.addMarkerToMap)(map, dataPoint);
   });
 }
 
@@ -175,212 +154,13 @@ function addNewDataPointClickToDb(dataPointsDbRef, dataPoint) {
   });
 }
 
-function addDataPointDbListener(dataPointsDbRef, map) {
+function getDataPointsFromDB(dataPointsDbRef, callback) {
   dataPointsDbRef.get().then(function (dataPoints) {
-    dataPoints.forEach(function (dataPoint) {
-      allDataPoints.push(dataPoint.data());
-      (0, _DataVisualisationController.addMarkerToMap)(map, dataPoint.data());
-    });
+    callback(dataPoints.docs);
   });
-
-  //TODO: get datapoints as they are added to database
 }
 
-// function hideDataGrid(hidden) {
-//   dataGrid.forEach(function (rectangle) {
-//     rectangle.setVisible(!hidden);
-//   });
-// }
-//
-// function displayGrid(map) {
-//   dataGrid = [];
-//
-//   //Step1: find biggest square (in pixels) on map
-//   let bounds = map.getBounds();
-//   let projection = map.getProjection();
-//
-//   let ne = projection.fromLatLngToPoint(bounds.getNorthEast());
-//   let sw = projection.fromLatLngToPoint(bounds.getSouthWest());
-//
-//   let scale = Math.pow(2, map.getZoom());
-//
-//   let widthPixels = (ne.x - sw.x) * scale;
-//   let heightPixels = (sw.y - ne.y) * scale;
-//
-//   let totalSquareLengthPixels = Math.min(widthPixels, heightPixels);
-//
-//   //Step 2: find grid size in pixels
-//   let gridLengthPixels = Math.round(totalSquareLengthPixels / 20); //Eventually changeable by slider
-//
-//
-//   //Step 3: Create grid data structure
-//   let xOffsetOffScreen = gridLengthPixels + (0.5 * (widthPixels % gridLengthPixels));
-//   let yOffsetOffScreen = gridLengthPixels + (0.5 * (heightPixels % gridLengthPixels));
-//
-//   let gridsAmountX = 3 + Math.round(widthPixels / gridLengthPixels);
-//   let gridsAmountY = 3 + Math.round(heightPixels / gridLengthPixels); //todo recalculate
-//
-//
-//   //Using Pixels for grids because converting each grid coordinate to latlng and comparing each data point to a
-//   //list of lats and lngs takes much longer than finding pixel coordinate of datapoint! (then grid is easy to find)
-//
-//   let gridsXPixels = [];
-//   let xPixels;
-//   for (xPixels = -xOffsetOffScreen; xPixels < widthPixels + gridLengthPixels; xPixels += gridLengthPixels) {
-//     gridsXPixels.push(Math.round(xPixels));
-//   }
-//   let maxX = xPixels + gridLengthPixels;
-//
-//   let gridsYPixels = [];
-//   let yPixels;
-//   for (yPixels = -yOffsetOffScreen; yPixels < heightPixels + gridLengthPixels; yPixels += gridLengthPixels) {
-//     gridsYPixels.push(Math.round(yPixels));
-//   }
-//   let maxY = yPixels + gridLengthPixels;
-//
-//   //3D array! [X Position][Y Position][List of data in grid]
-//   let gridDataCollection = [];
-//   for (let gridX = 0; gridX < gridsAmountX + 1; gridX++) {
-//     gridDataCollection[gridX] = [];
-//     for (let gridY = 0; gridY < gridsAmountY + 1; gridY++) {
-//       gridDataCollection[gridX][gridY] = [];
-//     }
-//   }
-//
-//   allDataPoints.forEach(function (dataPoint) {
-//     let latlng = new google.maps.LatLng(dataPoint.latlng.lat, dataPoint.latlng.lng);
-//     let pixelPoint = projection.fromLatLngToPoint(latlng);
-//     let pixelX = Math.round((pixelPoint.x - sw.x) * scale);
-//     let pixelY = Math.round((pixelPoint.y - ne.y) * scale);
-//
-//     if (pixelX >= -xOffsetOffScreen && pixelX < maxX
-//       && pixelY >= -yOffsetOffScreen && pixelY < maxY) {
-//       let gridX = ((pixelX + xOffsetOffScreen) / gridLengthPixels);
-//       let gridY = ((pixelY + yOffsetOffScreen) / gridLengthPixels);
-//       gridDataCollection[(Math.floor(gridX))][Math.floor(gridY)].push(dataPoint.value);
-//     }
-//   });
-//
-//   let maxGridValue = 0;
-//   let minGridValue = 100;
-//   let sumOfGridValues = 0;
-//   let totalGridValues = 0; //number of non-empty grids to calculate average grid value
-//
-//
-//   let gridIndexToLatLngBounds = [];
-//
-//   for (let gridX = 0; gridX < gridsXPixels.length + 1; gridX++) {
-//     gridIndexToLatLngBounds[gridX] = [];
-//     for (let gridY = 0; gridY < gridsYPixels.length + 1; gridY++) {
-//       let gridBounds = pointToLatLng(projection, gridsXPixels[gridX], gridsYPixels[gridY], sw.x, ne.y, scale, gridLengthPixels);
-//       gridIndexToLatLngBounds[gridX][gridY] = gridBounds;
-//
-//       let values = gridDataCollection[gridX][gridY];
-//
-//       let count = values.length;
-//       if (count === 0) {
-//         gridDataCollection[gridX][gridY] = null;
-//       } else {
-//         let total = 0;
-//         for (let index = 0; index < count; index++) {
-//           total += parseInt(gridDataCollection[gridX][gridY][index]);
-//         }
-//         let avg = (total / count).toFixed(2);
-//         gridDataCollection[gridX][gridY] = avg;
-//
-//         if (avg > maxGridValue) {
-//           maxGridValue = avg;
-//         }
-//         if (avg < minGridValue) {
-//           maxGridValue = avg;
-//         }
-//         sumOfGridValues += parseFloat(avg);
-//         totalGridValues++;
-//       }
-//     }
-//   }
-//
-//   // console.log(gridDataCollection);
-//
-//   /*for (gridX=0; gridX< gridsXPixels.length + 1; gridX++) {
-//     for (gridY=0; gridY< gridsYPixels.length + 1; gridY++) {
-//       drawRectangle(map, gridIndexToLatLngBounds[gridX][gridY], gridDataCollection[gridX][gridY]);
-//     }
-//   }*/
-//
-//   let gridBlendedDataCollection = blendGrid(gridDataCollection);
-//
-//   console.log(gridBlendedDataCollection);
-//   for (let gridX = 0; gridX < gridsXPixels.length - 1; gridX++) {
-//     for (let gridY = 0; gridY < gridsYPixels.length - 1; gridY++) {
-//       drawRectangle(map, gridIndexToLatLngBounds[gridX + 1][gridY + 1], gridBlendedDataCollection[gridX][gridY]);
-//     }
-//   }
-// }
-//
-// function blendGrid(gridDataCollection) {
-//   let gridBlendedDataCollection = [];
-//   for (let gridX = 1; gridX < gridDataCollection.length - 1; gridX++) {
-//     gridBlendedDataCollection[gridX - 1] = [];
-//     for (let gridY = 1; gridY < gridDataCollection[gridX].length - 1; gridY++) {
-//       let total = 0; // total values for grid of 3 x 3
-//       let count = 0;
-//
-//
-//       for (let xIndex = gridX - 1; xIndex <= gridX + 1; xIndex++) {
-//         for (let yIndex = gridY - 1; yIndex <= gridY + 1; yIndex++) {
-//           let val = gridDataCollection[xIndex][yIndex];
-//           if (val != null) {
-//             count += parseInt(1);
-//             total += parseFloat(val);
-//           }
-//         }
-//       }
-//
-//       let dontShowGrid = ((count < 3) && (gridDataCollection[gridX][gridY] == null));
-//       if (dontShowGrid) {
-//         gridBlendedDataCollection[gridX - 1][gridY - 1] = null;
-//       } else {
-//         let avg = total / count;
-//         gridBlendedDataCollection[gridX - 1][gridY - 1] = avg;
-//       }
-//     }
-//   }
-//
-//   return gridBlendedDataCollection;
-// }
-//
-// function blendOperation(gridValues, x, y, count, total) {
-//   let val = gridValues[x][y];
-//   if (!isNaN(val)) {
-//     count += parseInt(1);
-//     total += parseInt(val);
-//   }
-// }
-//
-// function pointToLatLng(projection, x, y, startX, startY, scale, gridLength) {
-//   let nePoint = new google.maps.Point((x / scale) + startX, (y / scale) + startY);
-//   let ne = projection.fromPointToLatLng(nePoint);
-//   let swPoint = new google.maps.Point(((x + gridLength) / scale) + startX, ((y + gridLength) / scale) + startY);
-//   let sw = projection.fromPointToLatLng(swPoint);
-//
-//   let bounds = new google.maps.LatLngBounds(ne, sw);
-//   return bounds;
-// }
-//
-// function drawRectangle(map, bounds, value) {
-//   if (value != null) {
-//     let hue = (100 - value) * 0.6;
-//     let colorString = 'hsl(' + hue + ', 100%, 50%)';
-//     dataGrid.push(new google.maps.Rectangle({
-//       strokeWeight: 0,
-//       fillColor: colorString,
-//       fillOpacity: 0.7,
-//       map: map,
-//       bounds: bounds,
-//     }));
-//   }
-// }
+//TODO: get datapoints as they are added to database
 
 /***/ }),
 
@@ -436,15 +216,8 @@ function addFormButtonListeners() {
   };
 
   showPointsButton.onclick = function () {
-    if (showDataPointsVal) {
-      showPointsButton.innerText = 'Show Data Points';
-      showPointsButton.classList.remove('btn-primary');
-      showPointsButton.classList.add('btn-outline-primary');
-    } else {
-      showPointsButton.innerText = 'Hide Data Points';
-      showPointsButton.classList.remove('btn-outline-primary');
-      showPointsButton.classList.add('btn-primary');
-    }
+    styleButton(showPointsButton, !showDataPointsVal);
+    showPointsButton.innerText = showDataPointsVal ? 'Show Data Points' : 'Hide Data Points';
     showDataPointsVal = !showDataPointsVal;
     showDataPoints(showDataPointsVal);
   };
@@ -457,15 +230,8 @@ function addFormButtonListeners() {
   };
 
   showHeatmapButton.onclick = function () {
-    if (showDensityHeatmapVal) {
-      showHeatmapButton.innerText = 'Show Heatmap';
-      showHeatmapButton.classList.remove('btn-primary');
-      showHeatmapButton.classList.add('btn-outline-primary');
-    } else {
-      showHeatmapButton.innerText = 'Hide Heatmap';
-      showHeatmapButton.classList.remove('btn-outline-primary');
-      showHeatmapButton.classList.add('btn-primary');
-    }
+    styleButton(showHeatmapButton, !showDensityHeatmapVal);
+    showHeatmapButton.innerText = showDensityHeatmapVal ? 'Show Density Heatmap' : 'Hide Density Heatmap';
     showDensityHeatmapVal = !showDensityHeatmapVal;
     showDensityHeatmap(showDensityHeatmapVal);
   };
@@ -502,6 +268,8 @@ exports.addMarkerToMap = exports.initDVController = undefined;
 
 var _ButtonEventHandler = __webpack_require__(/*! ./ButtonEventHandler */ "./ButtonEventHandler.js");
 
+var _GridOverlay = __webpack_require__(/*! ./GridOverlay */ "./GridOverlay.js");
+
 var map = void 0;
 var dataPoints = void 0;
 
@@ -515,16 +283,30 @@ var showDataCircleMarkers = false;
 var showDataGridOverlay = false;
 var heatmap = void 0;
 
-function initDVController(mapObject) {
+function initDVController(mapObject, dataPoints) {
+  allDataPoints = dataPoints.map(function (dataPoint) {
+    return dataPoint.data();
+  });
   map = mapObject;
   heatmap = new google.maps.visualization.HeatmapLayer({ radius: 0.005, dissipating: false });
+
   (0, _ButtonEventHandler.initButtonEventHandler)(showDataGrid, showDataCircles, showDataPoints, showDensityHeatmap);
+  initDataCirclesPointsAndHeatmap();
+  (0, _GridOverlay.initGridOverlay)(map, allDataPoints);
+}
+
+function initDataCirclesPointsAndHeatmap() {
+  allDataPoints.forEach(function (dataPoint) {
+    addMarkerToMap(dataPoint);
+  });
 }
 
 function showDataGrid(show) {
-  // dataGrid.forEach(function (rectangle) {
-  //   rectangle.setVisible(show);
-  // });
+  if (show) {
+    (0, _GridOverlay.displayGrid)();
+  } else {
+    (0, _GridOverlay.hideDataGrid)();
+  }
 }
 
 function showDataCircles(show) {
@@ -537,6 +319,7 @@ function showDataPoints(show) {
   showDataPoints = show;
   dataPointMarkers.forEach(function (dataPointMarker) {
     dataPointMarker.setVisible(show);
+    // dataPointMarker.setMap(show ? map : null);
   });
 }
 
@@ -544,7 +327,8 @@ function showDensityHeatmap(show) {
   heatmap.setMap(show ? map : null);
 }
 
-function addMarkerToMap(map, dataPoint) {
+function addMarkerToMap(dataPoint) {
+  // todo split up
   var latlng = dataPoint.latlng;
   heatmap.getData().push(new google.maps.LatLng(latlng.lat, latlng.lng));
   var hue = (100 - dataPoint.value) * 0.6;
@@ -620,6 +404,228 @@ function firebaseCredentials() {
     messagingSenderId: "512203516382"
   };
 }
+
+/***/ }),
+
+/***/ "./GridOverlay.js":
+/*!************************!*\
+  !*** ./GridOverlay.js ***!
+  \************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var map = void 0;
+var allDataPoints = void 0;
+var dataGrid = [];
+
+function initGridOverlay(mapObject, dataPoints) {
+  map = mapObject;
+  allDataPoints = dataPoints;
+}
+
+function hideDataGrid() {
+  dataGrid.forEach(function (rectangle) {
+    rectangle.setVisible(false);
+  });
+}
+
+function displayGrid() {
+
+  //Step1: find biggest square (in pixels) on map
+  var bounds = map.getBounds();
+  var projection = map.getProjection();
+
+  var ne = projection.fromLatLngToPoint(bounds.getNorthEast());
+  var sw = projection.fromLatLngToPoint(bounds.getSouthWest());
+
+  var scale = Math.pow(2, map.getZoom());
+
+  var widthPixels = (ne.x - sw.x) * scale;
+  var heightPixels = (sw.y - ne.y) * scale;
+
+  var totalSquareLengthPixels = Math.min(widthPixels, heightPixels);
+
+  //Step 2: find grid size in pixels
+  var gridLengthPixels = Math.round(totalSquareLengthPixels / 20); //Eventually changeable by slider
+
+
+  //Step 3: Create grid data structure
+  var xOffsetOffScreen = gridLengthPixels + 0.5 * (widthPixels % gridLengthPixels);
+  var yOffsetOffScreen = gridLengthPixels + 0.5 * (heightPixels % gridLengthPixels);
+
+  var gridsAmountX = 3 + Math.round(widthPixels / gridLengthPixels);
+  var gridsAmountY = 3 + Math.round(heightPixels / gridLengthPixels); //todo recalculate
+
+
+  //Using Pixels for grids because converting each grid coordinate to latlng and comparing each data point to a
+  //list of lats and lngs takes much longer than finding pixel coordinate of datapoint! (then grid is easy to find)
+
+  var gridsXPixels = [];
+  var xPixels = void 0;
+  for (xPixels = -xOffsetOffScreen; xPixels < widthPixels + gridLengthPixels; xPixels += gridLengthPixels) {
+    gridsXPixels.push(Math.round(xPixels));
+  }
+  var maxX = xPixels + gridLengthPixels;
+
+  var gridsYPixels = [];
+  var yPixels = void 0;
+  for (yPixels = -yOffsetOffScreen; yPixels < heightPixels + gridLengthPixels; yPixels += gridLengthPixels) {
+    gridsYPixels.push(Math.round(yPixels));
+  }
+  var maxY = yPixels + gridLengthPixels;
+
+  //3D array! [X Position][Y Position][List of data in grid]
+  var gridDataCollection = [];
+  for (var gridX = 0; gridX < gridsAmountX + 1; gridX++) {
+    gridDataCollection[gridX] = [];
+    for (var gridY = 0; gridY < gridsAmountY + 1; gridY++) {
+      gridDataCollection[gridX][gridY] = [];
+    }
+  }
+
+  allDataPoints.forEach(function (dataPoint) {
+    var latlng = new google.maps.LatLng(dataPoint.latlng.lat, dataPoint.latlng.lng);
+    var pixelPoint = projection.fromLatLngToPoint(latlng);
+    var pixelX = Math.round((pixelPoint.x - sw.x) * scale);
+    var pixelY = Math.round((pixelPoint.y - ne.y) * scale);
+
+    if (pixelX >= -xOffsetOffScreen && pixelX < maxX && pixelY >= -yOffsetOffScreen && pixelY < maxY) {
+      var _gridX = (pixelX + xOffsetOffScreen) / gridLengthPixels;
+      var _gridY = (pixelY + yOffsetOffScreen) / gridLengthPixels;
+      gridDataCollection[Math.floor(_gridX)][Math.floor(_gridY)].push(dataPoint.value);
+    }
+  });
+
+  var maxGridValue = 0;
+  var minGridValue = 100;
+  var sumOfGridValues = 0;
+  var totalGridValues = 0; //number of non-empty grids to calculate average grid value
+
+
+  var gridIndexToLatLngBounds = [];
+
+  for (var _gridX2 = 0; _gridX2 < gridsXPixels.length + 1; _gridX2++) {
+    gridIndexToLatLngBounds[_gridX2] = [];
+    for (var _gridY2 = 0; _gridY2 < gridsYPixels.length + 1; _gridY2++) {
+      var gridBounds = pointToLatLng(projection, gridsXPixels[_gridX2], gridsYPixels[_gridY2], sw.x, ne.y, scale, gridLengthPixels);
+      gridIndexToLatLngBounds[_gridX2][_gridY2] = gridBounds;
+
+      var values = gridDataCollection[_gridX2][_gridY2];
+
+      var count = values.length;
+      if (count === 0) {
+        gridDataCollection[_gridX2][_gridY2] = null;
+      } else {
+        var total = 0;
+        for (var index = 0; index < count; index++) {
+          total += parseInt(gridDataCollection[_gridX2][_gridY2][index]);
+        }
+        var avg = (total / count).toFixed(2);
+        gridDataCollection[_gridX2][_gridY2] = avg;
+
+        if (avg > maxGridValue) {
+          maxGridValue = avg;
+        }
+        if (avg < minGridValue) {
+          maxGridValue = avg;
+        }
+        sumOfGridValues += parseFloat(avg);
+        totalGridValues++;
+      }
+    }
+  }
+
+  // console.log(gridDataCollection);
+
+  /*for (gridX=0; gridX< gridsXPixels.length + 1; gridX++) {
+    for (gridY=0; gridY< gridsYPixels.length + 1; gridY++) {
+      drawRectangle(map, gridIndexToLatLngBounds[gridX][gridY], gridDataCollection[gridX][gridY]);
+    }
+  }*/
+
+  var gridBlendedDataCollection = blendGrid(gridDataCollection);
+
+  // console.log(gridBlendedDataCollection);
+  for (var _gridX3 = 0; _gridX3 < gridsXPixels.length - 1; _gridX3++) {
+    for (var _gridY3 = 0; _gridY3 < gridsYPixels.length - 1; _gridY3++) {
+      drawRectangle(map, gridIndexToLatLngBounds[_gridX3 + 1][_gridY3 + 1], gridBlendedDataCollection[_gridX3][_gridY3]);
+    }
+  }
+}
+
+function blendGrid(gridDataCollection) {
+  var gridBlendedDataCollection = [];
+  for (var gridX = 1; gridX < gridDataCollection.length - 1; gridX++) {
+    gridBlendedDataCollection[gridX - 1] = [];
+    for (var gridY = 1; gridY < gridDataCollection[gridX].length - 1; gridY++) {
+      var total = 0; // total values for grid of 3 x 3
+      var count = 0;
+
+      for (var xIndex = gridX - 1; xIndex <= gridX + 1; xIndex++) {
+        for (var yIndex = gridY - 1; yIndex <= gridY + 1; yIndex++) {
+          var val = gridDataCollection[xIndex][yIndex];
+          if (val != null) {
+            count += parseInt(1);
+            total += parseFloat(val);
+          }
+        }
+      }
+
+      var dontShowGrid = count < 3 && gridDataCollection[gridX][gridY] == null;
+      if (dontShowGrid) {
+        gridBlendedDataCollection[gridX - 1][gridY - 1] = null;
+      } else {
+        var avg = total / count;
+        gridBlendedDataCollection[gridX - 1][gridY - 1] = avg;
+      }
+    }
+  }
+
+  return gridBlendedDataCollection;
+}
+
+function blendOperation(gridValues, x, y, count, total) {
+  var val = gridValues[x][y];
+  if (!isNaN(val)) {
+    count += parseInt(1);
+    total += parseInt(val);
+  }
+}
+
+function pointToLatLng(projection, x, y, startX, startY, scale, gridLength) {
+  var nePoint = new google.maps.Point(x / scale + startX, y / scale + startY);
+  var ne = projection.fromPointToLatLng(nePoint);
+  var swPoint = new google.maps.Point((x + gridLength) / scale + startX, (y + gridLength) / scale + startY);
+  var sw = projection.fromPointToLatLng(swPoint);
+
+  var bounds = new google.maps.LatLngBounds(ne, sw);
+  return bounds;
+}
+
+function drawRectangle(map, bounds, value) {
+  if (value != null) {
+    var hue = (100 - value) * 0.6;
+    var colorString = 'hsl(' + hue + ', 100%, 50%)';
+    dataGrid.push(new google.maps.Rectangle({
+      strokeWeight: 0,
+      fillColor: colorString,
+      fillOpacity: 0.7,
+      map: map,
+      bounds: bounds
+    }));
+  }
+}
+
+exports.initGridOverlay = initGridOverlay;
+exports.hideDataGrid = hideDataGrid;
+exports.displayGrid = displayGrid;
 
 /***/ })
 
