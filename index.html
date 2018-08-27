@@ -30,17 +30,19 @@
             text-align: center;
         }
         #viewPanel {
-            top: 50px;
-            /*width: 355px;*/
-            padding-top: 10px;
-            padding-left: 15px;
-            padding-right: 15px;
+            top: 60px;
         }
         #dataPointPanel {
             bottom: 10px;
             margin-bottom: 22px;
-            padding-top: 10px;
+            padding-top: 5px;
             padding-left: 15px;
+        }
+        #viewTypeLabel {
+            padding-left: .25rem;
+        }
+        .form-group {
+            margin-bottom: 0!important;
         }
 
     </style>
@@ -50,10 +52,10 @@
 <div id="wrapper">
     <div id="map"></div>
 
-    <div id="viewPanel" class="col-md-2.5">
+    <div id="viewPanel" class="px-2 py-2">
         <div class="row justify-content-start">
             <div class="col-auto">
-                <label><b>View Type</b></label>
+                <label id="viewTypeLabel"><b>View Type</b></label>
             </div>
         </div>
         <!--<div class="row justify-content-start">-->
@@ -87,35 +89,35 @@
         </div>
         <div class="row justify-content-start">
             <div class="col-auto">
-                <button id="showHeatmap" type="button" class="btn btn-sm btn-outline-primary m-1">Show Heatmap</button>
+                <button id="showHeatmap" type="button" class="btn btn-sm btn-outline-primary m-1">Show Density Heatmap</button>
             </div>
         </div>
     </div>
 
     <div id="dataPointPanel">
         <form>
-            <label class="col-lg-6"><b>Data Point</b></label>
+            <label><b>Data Point</b></label>
             <div class="form-group row">
-                <label for="date" class="col-sm-2 col-form-label">Date</label>
-                <div class="col-sm-auto">
+                <label for="date" class="col-2 col-form-label">Date</label>
+                <div class="col-auto">
                     <input class="form-control form-control-sm" id="date">
                 </div>
             </div>
             <div class="form-group row">
-                <label for="time" class="col-sm-2 col-form-label">Time</label>
-                <div class="col-sm-auto">
+                <label for="time" class="col-2 col-form-label">Time</label>
+                <div class="col-auto">
                     <input class="form-control form-control-sm" id="time">
                 </div>
             </div>
             <div class="form-group row">
-                <label for="value" class="col-sm-2 col-form-label">Value</label>
-                <div class="col-sm-auto">
+                <label for="value" class="col-2 col-form-label">Value</label>
+                <div class="col-auto">
                     <input class="form-control form-control-sm" id="value">
                 </div>
             </div>
             <div class="form-group row">
-                <label for="user" class="col-sm-2 col-form-label">User</label>
-                <div class="col-sm-auto">
+                <label for="user" class="col-2 col-form-label">User</label>
+                <div class="col-auto">
                     <input class="form-control form-control-sm" id="user">
                 </div>
             </div>

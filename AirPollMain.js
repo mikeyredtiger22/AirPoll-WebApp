@@ -20,7 +20,7 @@ window.initApp = initApp;
 function initMap() {
   return new google.maps.Map(document.getElementById('map'), {
     center: {lat: 50.9365, lng: -1.396},
-    zoom: 16,
+    zoom: 15,
     //hide points of interest and public transport
     styles: [{
       featureType: 'poi',
