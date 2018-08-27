@@ -119,7 +119,7 @@ window.initApp = initApp;
 function initMap() {
   return new google.maps.Map(document.getElementById('map'), {
     center: { lat: 50.9365, lng: -1.396 },
-    zoom: 16,
+    zoom: 15,
     //hide points of interest and public transport
     styles: [{
       featureType: 'poi',
@@ -335,36 +335,35 @@ function addMarkerToMap(dataPoint) {
   var colorString = 'hsl(' + hue + ', 100%, 50%)';
   var marker = new google.maps.Marker({
     position: latlng,
-    label: dataPoint.value.toString(),
     map: map,
     visible: showDataPointMarkers,
     icon: {
       path: google.maps.SymbolPath.CIRCLE,
       strokeColor: colorString,
-      strokeOpacity: 0,
-      strokeWeight: 1,
+      strokeOpacity: 0.8,
+      strokeWeight: 2,
       fillColor: colorString,
-      fillOpacity: 0,
-      scale: 10
+      fillOpacity: 0.2,
+      scale: 5
     }
   });
 
   dataPointMarkers.push(marker);
 
+  var date = new Date(dataPoint.date);
   marker.addListener('click', function () {
-    var date = new Date(dataPoint.date);
     document.getElementById('date').value = date.toDateString();
     document.getElementById('time').value = date.toTimeString().split(' ')[0];
     document.getElementById('value').value = dataPoint.value;
   });
 
-  // drawCircle(latlng, map, colorString, 0.5, 50);
-  // drawCircle(latlng, map, colorString, 0.3, 100);
-  drawCircle(latlng, map, colorString, 0.1, 200);
+  drawCircle(latlng, map, colorString, 0.3, 50, date, dataPoint.value);
+  drawCircle(latlng, map, colorString, 0.2, 100, date, dataPoint.value);
+  drawCircle(latlng, map, colorString, 0.1, 200, date, dataPoint.value);
 }
 
-function drawCircle(latlng, map, colorString, opacity, radius) {
-  dataPointCircles.push(new google.maps.Circle({
+function drawCircle(latlng, map, colorString, opacity, radius, d1, d2) {
+  var circle = new google.maps.Circle({
     strokeOpacity: 0,
     fillColor: colorString,
     fillOpacity: opacity,
@@ -372,7 +371,13 @@ function drawCircle(latlng, map, colorString, opacity, radius) {
     center: latlng,
     radius: radius,
     visible: showDataCircleMarkers
-  }));
+  });
+  dataPointCircles.push(circle);
+  circle.addListener('click', function () {
+    document.getElementById('date').value = d1.toDateString();
+    document.getElementById('time').value = d1.toTimeString().split(' ')[0];
+    document.getElementById('value').value = d2;
+  });
 }
 
 exports.initDVController = initDVController;
@@ -420,10 +425,14 @@ function firebaseCredentials() {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
 var map = void 0;
 var allDataPoints = void 0;
 var dataGrid = [];
+var scale = void 0;
+var projection = void 0;
+var ne = void 0;
+var sw = void 0;
+var gridLengthPixels = void 0;
 
 function initGridOverlay(mapObject, dataPoints) {
   map = mapObject;
@@ -436,126 +445,90 @@ function hideDataGrid() {
   });
 }
 
+function latLngToPixels(latlng, callback) {
+  var latlng2 = new google.maps.LatLng(latlng.lat, latlng.lng);
+  var point = projection.fromLatLngToPoint(latlng2);
+  var pixelX = Math.round((point.x - sw.x) * scale);
+  var pixelY = Math.round((point.y - ne.y) * scale);
+  callback(pixelX, pixelY);
+}
+
 function displayGrid() {
 
-  //Step1: find biggest square (in pixels) on map
+  //Input:
+  var grids = 20; // 20 grids, end to end on smallest screen dimension
+
   var bounds = map.getBounds();
-  var projection = map.getProjection();
+  projection = map.getProjection();
 
-  var ne = projection.fromLatLngToPoint(bounds.getNorthEast());
-  var sw = projection.fromLatLngToPoint(bounds.getSouthWest());
+  ne = projection.fromLatLngToPoint(bounds.getNorthEast());
+  sw = projection.fromLatLngToPoint(bounds.getSouthWest());
 
-  var scale = Math.pow(2, map.getZoom());
+  scale = Math.pow(2, map.getZoom());
 
-  var widthPixels = (ne.x - sw.x) * scale;
-  var heightPixels = (sw.y - ne.y) * scale;
+  var widthPixels = Math.round((ne.x - sw.x) * scale);
+  var heightPixels = Math.round((sw.y - ne.y) * scale);
 
-  var totalSquareLengthPixels = Math.min(widthPixels, heightPixels);
+  // Find grid size in pixels
+  gridLengthPixels = Math.round(Math.min(widthPixels, heightPixels) / grids);
+  // here grids means extra grids rendered outside of screen:
+  var gridsCountX = grids + Math.ceil(widthPixels / gridLengthPixels);
+  var gridsCountY = grids + Math.ceil(heightPixels / gridLengthPixels);
+  console.log(gridsCountY);
 
-  //Step 2: find grid size in pixels
-  var gridLengthPixels = Math.round(totalSquareLengthPixels / 20); //Eventually changeable by slider
+  var borderPixelLength = grids * gridLengthPixels / 2;
+  var pixelStartX = -borderPixelLength;
+  var pixelStartY = -borderPixelLength;
+  var pixelEndX = widthPixels + borderPixelLength;
+  var pixelEndY = heightPixels + borderPixelLength;
 
-
-  //Step 3: Create grid data structure
-  var xOffsetOffScreen = gridLengthPixels + 0.5 * (widthPixels % gridLengthPixels);
-  var yOffsetOffScreen = gridLengthPixels + 0.5 * (heightPixels % gridLengthPixels);
-
-  var gridsAmountX = 3 + Math.round(widthPixels / gridLengthPixels);
-  var gridsAmountY = 3 + Math.round(heightPixels / gridLengthPixels); //todo recalculate
-
-
-  //Using Pixels for grids because converting each grid coordinate to latlng and comparing each data point to a
-  //list of lats and lngs takes much longer than finding pixel coordinate of datapoint! (then grid is easy to find)
-
-  var gridsXPixels = [];
-  var xPixels = void 0;
-  for (xPixels = -xOffsetOffScreen; xPixels < widthPixels + gridLengthPixels; xPixels += gridLengthPixels) {
-    gridsXPixels.push(Math.round(xPixels));
-  }
-  var maxX = xPixels + gridLengthPixels;
-
-  var gridsYPixels = [];
-  var yPixels = void 0;
-  for (yPixels = -yOffsetOffScreen; yPixels < heightPixels + gridLengthPixels; yPixels += gridLengthPixels) {
-    gridsYPixels.push(Math.round(yPixels));
-  }
-  var maxY = yPixels + gridLengthPixels;
-
-  //3D array! [X Position][Y Position][List of data in grid]
+  // Create grid - 2D array of objects: [X Position][Y Position]{}
+  // and set lat lng bounds of grids
   var gridDataCollection = [];
-  for (var gridX = 0; gridX < gridsAmountX + 1; gridX++) {
+  for (var gridX = 0; gridX < gridsCountX; gridX++) {
     gridDataCollection[gridX] = [];
-    for (var gridY = 0; gridY < gridsAmountY + 1; gridY++) {
-      gridDataCollection[gridX][gridY] = [];
+    for (var gridY = 0; gridY < gridsCountY; gridY++) {
+      var pixelX = -borderPixelLength + gridX * gridLengthPixels;
+      var pixelY = -borderPixelLength + gridY * gridLengthPixels;
+      var _bounds = gridToBounds(pixelX, pixelY);
+
+      gridDataCollection[gridX][gridY] = {
+        dataPoints: [],
+        avgValue: null,
+        count: 0,
+        bounds: _bounds
+      };
     }
   }
 
+  // Add each data point to grid array
   allDataPoints.forEach(function (dataPoint) {
-    var latlng = new google.maps.LatLng(dataPoint.latlng.lat, dataPoint.latlng.lng);
-    var pixelPoint = projection.fromLatLngToPoint(latlng);
-    var pixelX = Math.round((pixelPoint.x - sw.x) * scale);
-    var pixelY = Math.round((pixelPoint.y - ne.y) * scale);
-
-    if (pixelX >= -xOffsetOffScreen && pixelX < maxX && pixelY >= -yOffsetOffScreen && pixelY < maxY) {
-      var _gridX = (pixelX + xOffsetOffScreen) / gridLengthPixels;
-      var _gridY = (pixelY + yOffsetOffScreen) / gridLengthPixels;
-      gridDataCollection[Math.floor(_gridX)][Math.floor(_gridY)].push(dataPoint.value);
-    }
+    // maybe get latLng of each grid instead - less processing?
+    latLngToPixels(dataPoint.latlng, function (pixelX, pixelY) {
+      if (pixelX > pixelStartX && pixelX < pixelEndX && pixelY > pixelStartY && pixelY < pixelEndY) {
+        var _gridX = Math.floor((pixelX - pixelStartX) / gridLengthPixels);
+        var _gridY = Math.floor((pixelY - pixelStartY) / gridLengthPixels);
+        gridDataCollection[_gridX][_gridY].dataPoints.push(dataPoint.value);
+      }
+    });
   });
 
-  var maxGridValue = 0;
-  var minGridValue = 100;
-  var sumOfGridValues = 0;
-  var totalGridValues = 0; //number of non-empty grids to calculate average grid value
+  // Get average data point value for each grid (null for no data points)
+  for (var _gridX2 = 0; _gridX2 < gridsCountX; _gridX2++) {
+    for (var _gridY2 = 0; _gridY2 < gridsCountY; _gridY2++) {
+      var dataPoints = gridDataCollection[_gridX2][_gridY2].dataPoints;
+      if (dataPoints.length > 0) {
+        var sum = dataPoints.reduce(function (a, b) {
+          return parseInt(a) + parseInt(b);
+        });
+        var average = sum / dataPoints.length;
+        gridDataCollection[_gridX2][_gridY2].avgValue = average;
+        gridDataCollection[_gridX2][_gridY2].count = dataPoints.length;
 
+        var _bounds2 = gridDataCollection[_gridX2][_gridY2].bounds;
 
-  var gridIndexToLatLngBounds = [];
-
-  for (var _gridX2 = 0; _gridX2 < gridsXPixels.length + 1; _gridX2++) {
-    gridIndexToLatLngBounds[_gridX2] = [];
-    for (var _gridY2 = 0; _gridY2 < gridsYPixels.length + 1; _gridY2++) {
-      var gridBounds = pointToLatLng(projection, gridsXPixels[_gridX2], gridsYPixels[_gridY2], sw.x, ne.y, scale, gridLengthPixels);
-      gridIndexToLatLngBounds[_gridX2][_gridY2] = gridBounds;
-
-      var values = gridDataCollection[_gridX2][_gridY2];
-
-      var count = values.length;
-      if (count === 0) {
-        gridDataCollection[_gridX2][_gridY2] = null;
-      } else {
-        var total = 0;
-        for (var index = 0; index < count; index++) {
-          total += parseInt(gridDataCollection[_gridX2][_gridY2][index]);
-        }
-        var avg = (total / count).toFixed(2);
-        gridDataCollection[_gridX2][_gridY2] = avg;
-
-        if (avg > maxGridValue) {
-          maxGridValue = avg;
-        }
-        if (avg < minGridValue) {
-          maxGridValue = avg;
-        }
-        sumOfGridValues += parseFloat(avg);
-        totalGridValues++;
+        drawRectangle(_bounds2, average);
       }
-    }
-  }
-
-  // console.log(gridDataCollection);
-
-  /*for (gridX=0; gridX< gridsXPixels.length + 1; gridX++) {
-    for (gridY=0; gridY< gridsYPixels.length + 1; gridY++) {
-      drawRectangle(map, gridIndexToLatLngBounds[gridX][gridY], gridDataCollection[gridX][gridY]);
-    }
-  }*/
-
-  var gridBlendedDataCollection = blendGrid(gridDataCollection);
-
-  // console.log(gridBlendedDataCollection);
-  for (var _gridX3 = 0; _gridX3 < gridsXPixels.length - 1; _gridX3++) {
-    for (var _gridY3 = 0; _gridY3 < gridsYPixels.length - 1; _gridY3++) {
-      drawRectangle(map, gridIndexToLatLngBounds[_gridX3 + 1][_gridY3 + 1], gridBlendedDataCollection[_gridX3][_gridY3]);
     }
   }
 }
@@ -599,24 +572,28 @@ function blendOperation(gridValues, x, y, count, total) {
   }
 }
 
-function pointToLatLng(projection, x, y, startX, startY, scale, gridLength) {
-  var nePoint = new google.maps.Point(x / scale + startX, y / scale + startY);
+function pixelToPoint(pixelX, pixelY) {
+  return new google.maps.Point(pixelX / scale + sw.x, pixelY / scale + ne.y);
+}
+
+function gridToBounds(pixelX, pixelY) {
+  var nePoint = pixelToPoint(pixelX, pixelY);
+  var swPoint = pixelToPoint(pixelX + gridLengthPixels, pixelY + gridLengthPixels);
   var ne = projection.fromPointToLatLng(nePoint);
-  var swPoint = new google.maps.Point((x + gridLength) / scale + startX, (y + gridLength) / scale + startY);
   var sw = projection.fromPointToLatLng(swPoint);
 
   var bounds = new google.maps.LatLngBounds(ne, sw);
   return bounds;
 }
 
-function drawRectangle(map, bounds, value) {
+function drawRectangle(bounds, value) {
   if (value != null) {
     var hue = (100 - value) * 0.6;
     var colorString = 'hsl(' + hue + ', 100%, 50%)';
     dataGrid.push(new google.maps.Rectangle({
       strokeWeight: 0,
       fillColor: colorString,
-      fillOpacity: 0.7,
+      fillOpacity: 0.45,
       map: map,
       bounds: bounds
     }));

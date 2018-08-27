@@ -1,7 +1,11 @@
-
 let map;
 let allDataPoints;
 let dataGrid = [];
+let scale;
+let projection;
+let ne;
+let sw;
+let gridLengthPixels;
 
 function initGridOverlay(mapObject, dataPoints) {
   map = mapObject;
@@ -14,127 +18,93 @@ function hideDataGrid() {
   });
 }
 
+function latLngToPixels(latlng, callback) {
+  let latlng2 = new google.maps.LatLng(latlng.lat, latlng.lng);
+  let point = projection.fromLatLngToPoint(latlng2);
+  let pixelX = Math.round((point.x - sw.x) * scale);
+  let pixelY = Math.round((point.y - ne.y) * scale);
+  callback(pixelX, pixelY);
+}
+
 function displayGrid() {
 
-  //Step1: find biggest square (in pixels) on map
+  //Input:
+  let grids = 20; // 20 grids, end to end on smallest screen dimension
+
   let bounds = map.getBounds();
-  let projection = map.getProjection();
+  projection = map.getProjection();
 
-  let ne = projection.fromLatLngToPoint(bounds.getNorthEast());
-  let sw = projection.fromLatLngToPoint(bounds.getSouthWest());
+  ne = projection.fromLatLngToPoint(bounds.getNorthEast());
+  sw = projection.fromLatLngToPoint(bounds.getSouthWest());
 
-  let scale = Math.pow(2, map.getZoom());
+  scale = Math.pow(2, map.getZoom());
 
-  let widthPixels = (ne.x - sw.x) * scale;
-  let heightPixels = (sw.y - ne.y) * scale;
+  let widthPixels = Math.round((ne.x - sw.x) * scale);
+  let heightPixels = Math.round((sw.y - ne.y) * scale);
 
-  let totalSquareLengthPixels = Math.min(widthPixels, heightPixels);
+  // Find grid size in pixels
+  gridLengthPixels = Math.round(Math.min(widthPixels, heightPixels) / grids);
+  // here grids means extra grids rendered outside of screen:
+  let gridsCountX = grids + Math.ceil(widthPixels / gridLengthPixels);
+  let gridsCountY = grids + Math.ceil(heightPixels / gridLengthPixels);
+  console.log(gridsCountY);
 
-  //Step 2: find grid size in pixels
-  let gridLengthPixels = Math.round(totalSquareLengthPixels / 20); //Eventually changeable by slider
+  let borderPixelLength = (grids * gridLengthPixels) / 2;
+  let pixelStartX = - borderPixelLength;
+  let pixelStartY = - borderPixelLength;
+  let pixelEndX = widthPixels + borderPixelLength;
+  let pixelEndY = heightPixels + borderPixelLength;
 
-
-  //Step 3: Create grid data structure
-  let xOffsetOffScreen = gridLengthPixels + (0.5 * (widthPixels % gridLengthPixels));
-  let yOffsetOffScreen = gridLengthPixels + (0.5 * (heightPixels % gridLengthPixels));
-
-  let gridsAmountX = 3 + Math.round(widthPixels / gridLengthPixels);
-  let gridsAmountY = 3 + Math.round(heightPixels / gridLengthPixels); //todo recalculate
-
-
-  //Using Pixels for grids because converting each grid coordinate to latlng and comparing each data point to a
-  //list of lats and lngs takes much longer than finding pixel coordinate of datapoint! (then grid is easy to find)
-
-  let gridsXPixels = [];
-  let xPixels;
-  for (xPixels = -xOffsetOffScreen; xPixels < widthPixels + gridLengthPixels; xPixels += gridLengthPixels) {
-    gridsXPixels.push(Math.round(xPixels));
-  }
-  let maxX = xPixels + gridLengthPixels;
-
-  let gridsYPixels = [];
-  let yPixels;
-  for (yPixels = -yOffsetOffScreen; yPixels < heightPixels + gridLengthPixels; yPixels += gridLengthPixels) {
-    gridsYPixels.push(Math.round(yPixels));
-  }
-  let maxY = yPixels + gridLengthPixels;
-
-  //3D array! [X Position][Y Position][List of data in grid]
+  // Create grid - 2D array of objects: [X Position][Y Position]{}
+  // and set lat lng bounds of grids
   let gridDataCollection = [];
-  for (let gridX = 0; gridX < gridsAmountX + 1; gridX++) {
+  for (let gridX = 0; gridX < gridsCountX; gridX++) {
     gridDataCollection[gridX] = [];
-    for (let gridY = 0; gridY < gridsAmountY + 1; gridY++) {
-      gridDataCollection[gridX][gridY] = [];
+    for (let gridY = 0; gridY < gridsCountY; gridY++) {
+      let pixelX = (- borderPixelLength) + (gridX * gridLengthPixels);
+      let pixelY = (- borderPixelLength) + (gridY * gridLengthPixels);
+      let bounds = gridToBounds(pixelX, pixelY);
+
+      gridDataCollection[gridX][gridY] = {
+        dataPoints: [],
+        avgValue: null,
+        count: 0,
+        bounds: bounds,
+      };
     }
   }
 
+  // Add each data point to grid array
   allDataPoints.forEach(function (dataPoint) {
-    let latlng = new google.maps.LatLng(dataPoint.latlng.lat, dataPoint.latlng.lng);
-    let pixelPoint = projection.fromLatLngToPoint(latlng);
-    let pixelX = Math.round((pixelPoint.x - sw.x) * scale);
-    let pixelY = Math.round((pixelPoint.y - ne.y) * scale);
-
-    if (pixelX >= -xOffsetOffScreen && pixelX < maxX
-      && pixelY >= -yOffsetOffScreen && pixelY < maxY) {
-      let gridX = ((pixelX + xOffsetOffScreen) / gridLengthPixels);
-      let gridY = ((pixelY + yOffsetOffScreen) / gridLengthPixels);
-      gridDataCollection[(Math.floor(gridX))][Math.floor(gridY)].push(dataPoint.value);
-    }
+    // maybe get latLng of each grid instead - less processing?
+    latLngToPixels(dataPoint.latlng, function (pixelX, pixelY) {
+      if (
+        pixelX > pixelStartX &&
+        pixelX < pixelEndX &&
+        pixelY > pixelStartY &&
+        pixelY < pixelEndY
+      ) {
+        let gridX = Math.floor((pixelX - pixelStartX) / gridLengthPixels);
+        let gridY = Math.floor((pixelY - pixelStartY) / gridLengthPixels);
+        gridDataCollection[gridX][gridY].dataPoints.push(dataPoint.value);
+      }
+    });
   });
 
-  let maxGridValue = 0;
-  let minGridValue = 100;
-  let sumOfGridValues = 0;
-  let totalGridValues = 0; //number of non-empty grids to calculate average grid value
+  // Get average data point value for each grid (null for no data points)
+  for (let gridX = 0; gridX < gridsCountX; gridX++) {
+    for (let gridY = 0; gridY < gridsCountY; gridY++) {
+      let dataPoints = gridDataCollection[gridX][gridY].dataPoints;
+      if (dataPoints.length > 0) {
+        let sum = dataPoints.reduce(function (a, b) {return parseInt(a) + parseInt(b);});
+        let average = sum / dataPoints.length;
+        gridDataCollection[gridX][gridY].avgValue = average;
+        gridDataCollection[gridX][gridY].count = dataPoints.length;
 
+        let bounds = gridDataCollection[gridX][gridY].bounds;
 
-  let gridIndexToLatLngBounds = [];
-
-  for (let gridX = 0; gridX < gridsXPixels.length + 1; gridX++) {
-    gridIndexToLatLngBounds[gridX] = [];
-    for (let gridY = 0; gridY < gridsYPixels.length + 1; gridY++) {
-      let gridBounds = pointToLatLng(projection, gridsXPixels[gridX], gridsYPixels[gridY], sw.x, ne.y, scale, gridLengthPixels);
-      gridIndexToLatLngBounds[gridX][gridY] = gridBounds;
-
-      let values = gridDataCollection[gridX][gridY];
-
-      let count = values.length;
-      if (count === 0) {
-        gridDataCollection[gridX][gridY] = null;
-      } else {
-        let total = 0;
-        for (let index = 0; index < count; index++) {
-          total += parseInt(gridDataCollection[gridX][gridY][index]);
-        }
-        let avg = (total / count).toFixed(2);
-        gridDataCollection[gridX][gridY] = avg;
-
-        if (avg > maxGridValue) {
-          maxGridValue = avg;
-        }
-        if (avg < minGridValue) {
-          maxGridValue = avg;
-        }
-        sumOfGridValues += parseFloat(avg);
-        totalGridValues++;
+        drawRectangle(bounds, average);
       }
-    }
-  }
-
-  // console.log(gridDataCollection);
-
-  /*for (gridX=0; gridX< gridsXPixels.length + 1; gridX++) {
-    for (gridY=0; gridY< gridsYPixels.length + 1; gridY++) {
-      drawRectangle(map, gridIndexToLatLngBounds[gridX][gridY], gridDataCollection[gridX][gridY]);
-    }
-  }*/
-
-  let gridBlendedDataCollection = blendGrid(gridDataCollection);
-
-  // console.log(gridBlendedDataCollection);
-  for (let gridX = 0; gridX < gridsXPixels.length - 1; gridX++) {
-    for (let gridY = 0; gridY < gridsYPixels.length - 1; gridY++) {
-      drawRectangle(map, gridIndexToLatLngBounds[gridX + 1][gridY + 1], gridBlendedDataCollection[gridX][gridY]);
     }
   }
 }
@@ -179,33 +149,36 @@ function blendOperation(gridValues, x, y, count, total) {
   }
 }
 
-function pointToLatLng(projection, x, y, startX, startY, scale, gridLength) {
-  let nePoint = new google.maps.Point((x / scale) + startX, (y / scale) + startY);
+function pixelToPoint(pixelX, pixelY) {
+  return new google.maps.Point((pixelX / scale) + sw.x, (pixelY / scale) + ne.y);
+}
+
+function gridToBounds(pixelX, pixelY) {
+  let nePoint = pixelToPoint(pixelX, pixelY);
+  let swPoint = pixelToPoint(pixelX + gridLengthPixels, pixelY + gridLengthPixels);
   let ne = projection.fromPointToLatLng(nePoint);
-  let swPoint = new google.maps.Point(((x + gridLength) / scale) + startX, ((y + gridLength) / scale) + startY);
   let sw = projection.fromPointToLatLng(swPoint);
 
   let bounds = new google.maps.LatLngBounds(ne, sw);
   return bounds;
 }
 
-function drawRectangle(map, bounds, value) {
+function drawRectangle(bounds, value) {
   if (value != null) {
     let hue = (100 - value) * 0.6;
     let colorString = 'hsl(' + hue + ', 100%, 50%)';
     dataGrid.push(new google.maps.Rectangle({
       strokeWeight: 0,
       fillColor: colorString,
-      fillOpacity: 0.7,
+      fillOpacity: 0.45,
       map: map,
       bounds: bounds,
     }));
   }
 }
 
-
 export {
   initGridOverlay,
   hideDataGrid,
   displayGrid,
-}
+};
