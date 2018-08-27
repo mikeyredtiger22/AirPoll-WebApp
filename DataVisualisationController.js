@@ -64,46 +64,49 @@ function addMarkerToMap(dataPoint) {
   const colorString = 'hsl(' + hue + ', 100%, 50%)';
   const marker = new google.maps.Marker({
     position: latlng,
-    label: dataPoint.value.toString(),
     map: map,
     visible: showDataPointMarkers,
     icon: {
       path: google.maps.SymbolPath.CIRCLE,
       strokeColor: colorString,
-      strokeOpacity: 0,
-      strokeWeight: 1,
+      strokeOpacity: 0.8,
+      strokeWeight: 2,
       fillColor: colorString,
-      fillOpacity: 0,
-      scale: 10,
+      fillOpacity: 0.2,
+      scale: 5,
     },
   });
 
   dataPointMarkers.push(marker);
 
+  const date = new Date(dataPoint.date);
   marker.addListener('click', function () {
-    const date = new Date(dataPoint.date);
     document.getElementById('date').value = date.toDateString();
     document.getElementById('time').value = date.toTimeString().split(' ')[0];
     document.getElementById('value').value = dataPoint.value;
   });
 
-  // drawCircle(latlng, map, colorString, 0.5, 50);
-  // drawCircle(latlng, map, colorString, 0.3, 100);
-  drawCircle(latlng, map, colorString, 0.1, 200);
+  drawCircle(latlng, map, colorString, 0.3, 50, date, dataPoint.value);
+  drawCircle(latlng, map, colorString, 0.2, 100, date, dataPoint.value);
+  drawCircle(latlng, map, colorString, 0.1, 200, date, dataPoint.value);
 }
 
-function drawCircle(latlng, map, colorString, opacity, radius) {
-  dataPointCircles.push(
-    new google.maps.Circle({
-      strokeOpacity: 0,
-      fillColor: colorString,
-      fillOpacity: opacity,
-      map: map,
-      center: latlng,
-      radius: radius,
-      visible: showDataCircleMarkers,
-    }),
-  );
+function drawCircle(latlng, map, colorString, opacity, radius, d1, d2) {
+  let circle = new google.maps.Circle({
+    strokeOpacity: 0,
+    fillColor: colorString,
+    fillOpacity: opacity,
+    map: map,
+    center: latlng,
+    radius: radius,
+    visible: showDataCircleMarkers,
+  });
+  dataPointCircles.push(circle);
+  circle.addListener('click', function () {
+    document.getElementById('date').value = d1.toDateString();
+    document.getElementById('time').value = d1.toTimeString().split(' ')[0];
+    document.getElementById('value').value = d2;
+  });
 }
 
 export {
