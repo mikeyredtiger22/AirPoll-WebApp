@@ -456,7 +456,7 @@ function latLngToPixels(latlng, callback) {
 function displayGrid() {
 
   //Input:
-  var grids = 20; // 20 grids, end to end on smallest screen dimension
+  var grids = 50; // 20 grids, end to end on smallest screen dimension
 
   var bounds = map.getBounds();
   projection = map.getProjection();
@@ -474,7 +474,6 @@ function displayGrid() {
   // here grids means extra grids rendered outside of screen:
   var gridsCountX = grids + Math.ceil(widthPixels / gridLengthPixels);
   var gridsCountY = grids + Math.ceil(heightPixels / gridLengthPixels);
-  console.log(gridsCountY);
 
   var borderPixelLength = grids * gridLengthPixels / 2;
   var pixelStartX = -borderPixelLength;
@@ -494,8 +493,10 @@ function displayGrid() {
 
       gridDataCollection[gridX][gridY] = {
         dataPoints: [],
-        avgValue: null,
+        sum: null,
         count: 0,
+        avgValue: null,
+        blendValue: null,
         bounds: _bounds
       };
     }
@@ -521,55 +522,63 @@ function displayGrid() {
         var sum = dataPoints.reduce(function (a, b) {
           return parseInt(a) + parseInt(b);
         });
-        var average = sum / dataPoints.length;
-        gridDataCollection[_gridX2][_gridY2].avgValue = average;
+        var avgValue = (sum / dataPoints.length).toFixed(2);
+        gridDataCollection[_gridX2][_gridY2].sum = sum;
+        gridDataCollection[_gridX2][_gridY2].avgValue = avgValue;
         gridDataCollection[_gridX2][_gridY2].count = dataPoints.length;
+      }
+    }
+  }
 
-        var _bounds2 = gridDataCollection[_gridX2][_gridY2].bounds;
+  // Blend grid
+  var blendedGridDataCollection = blendGrid(gridDataCollection);
+  for (var _gridX3 = 0; _gridX3 < gridsCountX; _gridX3++) {
+    for (var _gridY3 = 0; _gridY3 < gridsCountY; _gridY3++) {
+      var _bounds2 = blendedGridDataCollection[_gridX3][_gridY3].bounds;
+      var _avgValue = blendedGridDataCollection[_gridX3][_gridY3].avgValue;
+      var blendValue = blendedGridDataCollection[_gridX3][_gridY3].blendValue;
 
-        drawRectangle(_bounds2, average);
+      if (_avgValue) {
+        // drawRectangle(bounds, avgValue);
+      }
+
+      if (blendValue) {
+        drawRectangle(_bounds2, blendValue);
       }
     }
   }
 }
 
 function blendGrid(gridDataCollection) {
-  var gridBlendedDataCollection = [];
-  for (var gridX = 1; gridX < gridDataCollection.length - 1; gridX++) {
-    gridBlendedDataCollection[gridX - 1] = [];
-    for (var gridY = 1; gridY < gridDataCollection[gridX].length - 1; gridY++) {
-      var total = 0; // total values for grid of 3 x 3
+  var blendRange = 2;
+  var countRequirement = 2;
+
+  var gridsCountX = gridDataCollection.length;
+  var gridsCountY = gridDataCollection[0].length;
+
+  for (var gridX = 0; gridX < gridsCountX; gridX++) {
+    for (var gridY = 0; gridY < gridsCountY; gridY++) {
+      var sum = 0;
       var count = 0;
 
-      for (var xIndex = gridX - 1; xIndex <= gridX + 1; xIndex++) {
-        for (var yIndex = gridY - 1; yIndex <= gridY + 1; yIndex++) {
-          var val = gridDataCollection[xIndex][yIndex];
-          if (val != null) {
-            count += parseInt(1);
-            total += parseFloat(val);
+      for (var xIndex = gridX - blendRange; xIndex <= gridX + blendRange; xIndex++) {
+        if (xIndex < 0 || xIndex >= gridsCountX) continue;
+        for (var yIndex = gridY - blendRange; yIndex <= gridY + blendRange; yIndex++) {
+          if (yIndex < 0 || yIndex >= gridsCountY) continue;
+
+          if (gridDataCollection[xIndex][yIndex].count > 0) {
+            sum += parseInt(gridDataCollection[xIndex][yIndex].sum);
+            count += parseInt(gridDataCollection[xIndex][yIndex].count);
           }
         }
       }
 
-      var dontShowGrid = count < 3 && gridDataCollection[gridX][gridY] == null;
-      if (dontShowGrid) {
-        gridBlendedDataCollection[gridX - 1][gridY - 1] = null;
-      } else {
-        var avg = total / count;
-        gridBlendedDataCollection[gridX - 1][gridY - 1] = avg;
+      if (count >= countRequirement) {
+        gridDataCollection[gridX][gridY].blendValue = (sum / count).toFixed(2);
       }
     }
   }
-
-  return gridBlendedDataCollection;
-}
-
-function blendOperation(gridValues, x, y, count, total) {
-  var val = gridValues[x][y];
-  if (!isNaN(val)) {
-    count += parseInt(1);
-    total += parseInt(val);
-  }
+  return gridDataCollection;
 }
 
 function pixelToPoint(pixelX, pixelY) {
@@ -582,8 +591,7 @@ function gridToBounds(pixelX, pixelY) {
   var ne = projection.fromPointToLatLng(nePoint);
   var sw = projection.fromPointToLatLng(swPoint);
 
-  var bounds = new google.maps.LatLngBounds(ne, sw);
-  return bounds;
+  return new google.maps.LatLngBounds(ne, sw);
 }
 
 function drawRectangle(bounds, value) {
