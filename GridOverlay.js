@@ -19,8 +19,8 @@ function hideDataGrid() {
 }
 
 function latLngToPixels(latlng, callback) {
-  let latlng = new google.maps.LatLng(latlng.lat, latlng.lng);
-  let point = projection.fromLatLngToPoint(latlng);
+  let latlng2 = new google.maps.LatLng(latlng.lat, latlng.lng);
+  let point = projection.fromLatLngToPoint(latlng2);
   let pixelX = Math.round((point.x - sw.x) * scale);
   let pixelY = Math.round((point.y - ne.y) * scale);
   callback(pixelX, pixelY);

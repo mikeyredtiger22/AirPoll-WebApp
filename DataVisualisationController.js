@@ -21,12 +21,58 @@ function initDVController(mapObject, dataPoints) {
 
   initButtonEventHandler(showDataGrid, showDataCircles, showDataPoints, showDensityHeatmap);
   initDataCirclesPointsAndHeatmap();
+  createMarkers();
+  createCircles();
+  createHeatmap();
+
   initGridOverlay(map, allDataPoints);
 }
 
-function initDataCirclesPointsAndHeatmap() {
-  allDataPoints.forEach(function(dataPoint) {
-    addMarkerToMap(dataPoint);
+function createMarkers() {
+  allDataPoints.forEach(function (dataPoint) {
+    const hue = (100 - dataPoint.value) * 0.6;
+    const colorString = 'hsl(' + hue + ', 100%, 50%)';
+    const marker = new google.maps.Marker({
+      position: dataPoint.latlng,
+      map: map,
+      visible: showDataPointMarkers,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        strokeColor: colorString,
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: colorString,
+        fillOpacity: 0.2,
+        scale: 5,
+      },
+    });
+
+    const date = new Date(dataPoint.date);
+    marker.addListener('click', function () {
+      document.getElementById('date').value = date.toDateString();
+      document.getElementById('time').value = date.toTimeString().split(' ')[0];
+      document.getElementById('value').value = dataPoint.value;
+    });
+
+    dataPointMarkers.push(marker);
+  });
+}
+
+function createHeatmap() {
+  allDataPoints.forEach(function (dataPoint) {
+    heatmap.getData().push(new google.maps.LatLng(dataPoint.latlng.lat, dataPoint.latlng.lng));
+  });
+}
+
+function createCircles() {
+  allDataPoints.forEach(function (dataPoint) {
+    const latlng = dataPoint.latlng;
+    const hue = (100 - dataPoint.value) * 0.6;
+    const colorString = 'hsl(' + hue + ', 100%, 50%)';
+    const date = new Date(dataPoint.date);
+    drawCircle(latlng, map, colorString, 0.3, 50, date, dataPoint.value);
+    drawCircle(latlng, map, colorString, 0.2, 100, date, dataPoint.value);
+    drawCircle(latlng, map, colorString, 0.1, 200, date, dataPoint.value);
   });
 }
 
@@ -56,41 +102,6 @@ function showDensityHeatmap(show) {
   heatmap.setMap(show ? map : null);
 }
 
-function addMarkerToMap(dataPoint) {
-  // todo split up
-  const latlng = dataPoint.latlng;
-  heatmap.getData().push(new google.maps.LatLng(latlng.lat, latlng.lng));
-  const hue = (100 - dataPoint.value) * 0.6;
-  const colorString = 'hsl(' + hue + ', 100%, 50%)';
-  const marker = new google.maps.Marker({
-    position: latlng,
-    map: map,
-    visible: showDataPointMarkers,
-    icon: {
-      path: google.maps.SymbolPath.CIRCLE,
-      strokeColor: colorString,
-      strokeOpacity: 0.8,
-      strokeWeight: 2,
-      fillColor: colorString,
-      fillOpacity: 0.2,
-      scale: 5,
-    },
-  });
-
-  dataPointMarkers.push(marker);
-
-  const date = new Date(dataPoint.date);
-  marker.addListener('click', function () {
-    document.getElementById('date').value = date.toDateString();
-    document.getElementById('time').value = date.toTimeString().split(' ')[0];
-    document.getElementById('value').value = dataPoint.value;
-  });
-
-  drawCircle(latlng, map, colorString, 0.3, 50, date, dataPoint.value);
-  drawCircle(latlng, map, colorString, 0.2, 100, date, dataPoint.value);
-  drawCircle(latlng, map, colorString, 0.1, 200, date, dataPoint.value);
-}
-
 function drawCircle(latlng, map, colorString, opacity, radius, d1, d2) {
   let circle = new google.maps.Circle({
     strokeOpacity: 0,
@@ -111,5 +122,4 @@ function drawCircle(latlng, map, colorString, opacity, radius, d1, d2) {
 
 export {
   initDVController,
-  addMarkerToMap,
-}
+};
