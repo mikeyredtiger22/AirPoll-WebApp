@@ -8,8 +8,11 @@ let dataPointCircles = [];
 let heatmap;
 
 function initDVController(mapObject, dataPoints) {
-  allDataPoints = dataPoints.map(dataPoint => dataPoint.data());
   map = mapObject;
+  allDataPoints = dataPoints.map(dataPoint => dataPoint.data());
+  allDataPoints.forEach(dataPoint => {
+    dataPoint.latlng = new google.maps.LatLng(dataPoint.lat, dataPoint.lng);
+  });
 
   initButtonEventHandler(showDataGrid, showDataCircles, showDataPoints, showDensityHeatmap);
   createMarkers();
@@ -45,7 +48,7 @@ function createMarkers() {
 function createHeatmap() {
   heatmap = new google.maps.visualization.HeatmapLayer({radius: 0.005, dissipating: false});
   allDataPoints.forEach(function (dataPoint) {
-    heatmap.getData().push(new google.maps.LatLng(dataPoint.latlng.lat, dataPoint.latlng.lng));
+    heatmap.getData().push(dataPoint.latlng);
   });
 }
 

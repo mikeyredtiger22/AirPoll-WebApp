@@ -4,7 +4,7 @@ import { initDVController } from './DataVisualisationController';
 function initApp() {
   const config = firebaseCredentials(); //Firebase API keys
   firebase.initializeApp(config);
-  const dataPointsDbRef = firebase.firestore().collection('datapoints');
+  const dataPointsDbRef = firebase.firestore().collection('data');
 
   const map = initMap();
 
@@ -36,7 +36,7 @@ function initMap() {
 
 function addMapClickListener(map, dataPointsDbRef) {
   map.addListener('click', function (mapLayer) {
-
+    // todo migrate to new datapoint structure
     const dataPoint = {
       latlng: mapLayer.latLng.toJSON(),
       value: Math.floor((Math.random() * 100)).toString(),
