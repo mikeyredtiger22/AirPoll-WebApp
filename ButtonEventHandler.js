@@ -27,7 +27,7 @@ function addFormButtonListeners() {
   showDataGridVal = !(showGridButton.innerText === 'Show Data Grid');
   showDataPointsVal = !(showPointsButton.innerText === 'Show Data Points');
   showDataCirclesVal = !(showCirclesButton.innerText === 'Show Data Circles');
-  showDensityHeatmapVal = !(showHeatmapButton.innerText === 'Show Heatmap');
+  showDensityHeatmapVal = !(showHeatmapButton.innerText === 'Show Density Heatmap');
 
   showGridButton.onclick = function () {
     styleButton(showGridButton, !showDataGridVal);
