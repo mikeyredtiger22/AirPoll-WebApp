@@ -19,8 +19,8 @@ function hideDataGrid() {
 }
 
 function latLngToPixels(latlng, callback) {
-  let latlng2 = new google.maps.LatLng(latlng.lat, latlng.lng);
-  let point = projection.fromLatLngToPoint(latlng2);
+  let latlng = new google.maps.LatLng(latlng.lat, latlng.lng);
+  let point = projection.fromLatLngToPoint(latlng);
   let pixelX = Math.round((point.x - sw.x) * scale);
   let pixelY = Math.round((point.y - ne.y) * scale);
   callback(pixelX, pixelY);
@@ -126,35 +126,59 @@ function displayGrid() {
 }
 
 function blendGrid(gridDataCollection) {
-  const blendRange = 2;
-  const countRequirement = 2;
 
   let gridsCountX = gridDataCollection.length;
   let gridsCountY = gridDataCollection[0].length;
 
   for (let gridX = 0; gridX < gridsCountX; gridX++) {
     for (let gridY = 0; gridY < gridsCountY; gridY++) {
-      let sum = 0;
+      let avg = 0;
       let count = 0;
 
-      for (let xIndex = gridX - blendRange; xIndex <= gridX + blendRange; xIndex++) {
-        if (xIndex < 0 || xIndex >= gridsCountX) continue;
-        for (let yIndex = gridY - blendRange; yIndex <= gridY + blendRange; yIndex++) {
-          if (yIndex < 0 || yIndex >= gridsCountY) continue;
-
-          if (gridDataCollection[xIndex][yIndex].count > 0) {
-            sum += parseInt(gridDataCollection[xIndex][yIndex].sum);
-            count += parseInt(gridDataCollection[xIndex][yIndex].count);
-          }
-        }
+      // blend0
+      if (gridDataCollection[gridX][gridY].avgValue) {
+        avg += gridDataCollection[gridX][gridY].avgValue;
+        count += 1;
       }
 
-      if (count >= countRequirement) {
-        gridDataCollection[gridX][gridY].blendValue = (sum / count).toFixed(2);
+      let blendResult;
+      let currBlendRange = 2;
+      let stop = false;
+      do {
+        currBlendRange++;
+        blendResult = null;
+        blendResult = blendRangeF(currBlendRange, gridX, gridY, gridsCountX, gridsCountY, gridDataCollection);
+        stop = (blendResult.count > currBlendRange -1 || currBlendRange > 5);
+      } while (!stop);
+
+      let finalValue = null;
+      if (blendResult.blendValue && blendResult.count > currBlendRange -1) {
+        finalValue = blendResult.blendValue;
       }
+
+      gridDataCollection[gridX][gridY].blendValue = finalValue;
     }
   }
   return gridDataCollection;
+}
+
+function blendRangeF(blendRange, gridX, gridY, gridsCountX, gridsCountY, gridDataCollection) {
+  let result = { sum: 0, count: 0 };
+  for (let xIndex = gridX - blendRange; xIndex <= gridX + blendRange; xIndex++) {
+    if (xIndex < 0 || xIndex >= gridsCountX) continue;
+    for (let yIndex = gridY - blendRange; yIndex <= gridY + blendRange; yIndex++) {
+      if (yIndex < 0 || yIndex >= gridsCountY) continue;
+
+      if (gridDataCollection[xIndex][yIndex].count > 0) {
+        result.sum += parseInt(gridDataCollection[xIndex][yIndex].sum);
+        result.count += parseInt(gridDataCollection[xIndex][yIndex].count);
+      }
+    }
+  }
+  if (result.count > 0) {
+    result.blendValue = (result.sum / result.count).toFixed(2);
+  }
+  return result;
 }
 
 function pixelToPoint(pixelX, pixelY) {

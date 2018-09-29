@@ -558,27 +558,53 @@ function blendGrid(gridDataCollection) {
 
   for (var gridX = 0; gridX < gridsCountX; gridX++) {
     for (var gridY = 0; gridY < gridsCountY; gridY++) {
-      var sum = 0;
+      var avg = 0;
       var count = 0;
 
-      for (var xIndex = gridX - blendRange; xIndex <= gridX + blendRange; xIndex++) {
-        if (xIndex < 0 || xIndex >= gridsCountX) continue;
-        for (var yIndex = gridY - blendRange; yIndex <= gridY + blendRange; yIndex++) {
-          if (yIndex < 0 || yIndex >= gridsCountY) continue;
-
-          if (gridDataCollection[xIndex][yIndex].count > 0) {
-            sum += parseInt(gridDataCollection[xIndex][yIndex].sum);
-            count += parseInt(gridDataCollection[xIndex][yIndex].count);
-          }
-        }
+      // blend0
+      if (gridDataCollection[gridX][gridY].avgValue) {
+        avg += gridDataCollection[gridX][gridY].avgValue;
+        count += 1;
       }
 
-      if (count >= countRequirement) {
-        gridDataCollection[gridX][gridY].blendValue = (sum / count).toFixed(2);
+      var blendResult = void 0;
+      var currBlendRange = 2;
+      var stop = false;
+      do {
+        currBlendRange++;
+        blendResult = null;
+        blendResult = blendRangeF(currBlendRange, gridX, gridY, gridsCountX, gridsCountY, gridDataCollection);
+        stop = blendResult.count > currBlendRange - 1 || currBlendRange > 5;
+      } while (!stop);
+
+      var finalValue = null;
+      if (blendResult.blendValue && blendResult.count > currBlendRange - 1) {
+        finalValue = blendResult.blendValue;
       }
+
+      gridDataCollection[gridX][gridY].blendValue = finalValue;
     }
   }
   return gridDataCollection;
+}
+
+function blendRangeF(blendRange, gridX, gridY, gridsCountX, gridsCountY, gridDataCollection) {
+  var result = { sum: 0, count: 0 };
+  for (var xIndex = gridX - blendRange; xIndex <= gridX + blendRange; xIndex++) {
+    if (xIndex < 0 || xIndex >= gridsCountX) continue;
+    for (var yIndex = gridY - blendRange; yIndex <= gridY + blendRange; yIndex++) {
+      if (yIndex < 0 || yIndex >= gridsCountY) continue;
+
+      if (gridDataCollection[xIndex][yIndex].count > 0) {
+        result.sum += parseInt(gridDataCollection[xIndex][yIndex].sum);
+        result.count += parseInt(gridDataCollection[xIndex][yIndex].count);
+      }
+    }
+  }
+  if (result.count > 0) {
+    result.blendValue = (result.sum / result.count).toFixed(2);
+  }
+  return result;
 }
 
 function pixelToPoint(pixelX, pixelY) {
