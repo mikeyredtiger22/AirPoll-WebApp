@@ -19,9 +19,8 @@
             padding: 0;
         }
 
-        #viewPanel, #dataPointPanel {
+        #viewPanel, #filterPanel, #dataPointPanel {
             position: absolute;
-            left: 10px;
 
             background-color: rgba(255, 255, 255, 0.51);
             border: 2px solid rgba(255, 255, 255, 0.5);
@@ -31,10 +30,16 @@
         }
         #viewPanel {
             top: 60px;
+            left: 10px;
+        }
+        #filterPanel {
+            width: 65%;
+            right: 60px;
+            bottom: 20px;
         }
         #dataPointPanel {
-            bottom: 10px;
-            margin-bottom: 22px;
+            bottom: 32px;
+            left: 10px;
             padding-top: 5px;
             padding-left: 15px;
         }
@@ -94,6 +99,28 @@
         </div>
     </div>
 
+    <div id="filterPanel" class="px-2 py-2">
+        <div class="row justify-content-start">
+            <div class="col-auto">
+                <label id="FilterLabel"><b>Filter Data</b></label>
+            </div>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="A">
+            <label class="form-check-label" for="inlineCheckbox1">Treatment A</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="inlineCheckbox2" value="B">
+            <label class="form-check-label" for="inlineCheckbox2">Treatment B</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="inlineCheckbox3" value="C">
+            <label class="form-check-label" for="inlineCheckbox3">Treatment C</label>
+        </div>
+        <div id="dateSlider"></div>
+        <div id="timeSlider"></div>
+    </div>
+
     <div id="dataPointPanel">
         <form>
             <label><b>Data Point</b></label>
@@ -142,6 +169,11 @@
 
 <!--google maps-->
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCTY-5_e4vfG_hURD10OVQ-wOkkiBQpZlI&libraries=visualization&callback=initApp"></script>
+
+<!--noUiSlider - double range slider-->
+<!--<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/12.0.0/nouislider.css">-->
+<link rel="stylesheet" type="text/css" href="nouislider.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/12.0.0/nouislider.js"></script>
 
 </body>
 </html>

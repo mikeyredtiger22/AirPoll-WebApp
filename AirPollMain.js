@@ -1,5 +1,6 @@
 import { firebaseCredentials } from './FirebaseCredentials';
 import { initDVController } from './DataVisualisationController';
+import { addSliders } from './Filter';
 
 function initApp() {
   const config = firebaseCredentials(); //Firebase API keys
@@ -9,6 +10,7 @@ function initApp() {
   const map = initMap();
 
   addMapClickListener(map, dataPointsDbRef);
+  addSliders();
 
   getDataPointsFromDB(dataPointsDbRef, function(dataPoints) {
     initDVController(map, dataPoints);
