@@ -1,12 +1,18 @@
 
 function createTreatmentFilters(treatments) {
-  //todo: get all DP treatments
+  console.log(treatments);
+  // todo relabel 'undefined' treatment or fix data
+  /*
+  <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" id="inlineCheckbox3" value="C">
+      <label class="form-check-label" for="inlineCheckbox3">Treatment C</label>
+  </div>
+   */
   //todo: create div element (checkbox) for each
   //todo: attach listener to hide datapoints & DV (high level filter)
-  const showGridButton = document.getElementById('showGrid');
 }
 
-export function addSliders() {
+function addSliders() {
   let dateSliderElement = document.getElementById('dateFilterSlider');
   let timeSliderElement = document.getElementById('timeFilterSlider');
 
@@ -40,9 +46,13 @@ export function addSliders() {
 
   timeSlider.on('change', function (values, handle, unencoded) {
     let startTimeString = parseInt(unencoded[0]/(60 * 60 * 1000));
-    let endTimeString = parseInt(unencoded[1]/(60 * 60 * 1000)); //todo fix 15.000...2
+    let endTimeString = parseInt(unencoded[1]/(60 * 60 * 1000));
     let timeRangeString = startTimeString + ' - ' + endTimeString;
     document.getElementById('timeRangeOutput').innerHTML = 'Time Range: ' + timeRangeString;
   });
+}
 
+export {
+  createTreatmentFilters,
+  addSliders,
 }

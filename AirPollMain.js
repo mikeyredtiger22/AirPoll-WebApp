@@ -1,6 +1,6 @@
 import { firebaseCredentials } from './FirebaseCredentials';
 import { initDVController } from './DataVisualisationController';
-import { addSliders } from './Filter';
+import { addSliders, createTreatmentFilters } from './Filter';
 
 function initApp() {
   const config = firebaseCredentials(); //Firebase API keys
@@ -14,7 +14,12 @@ function initApp() {
 
   getDataPointsFromDB(dataPointsDbRef, function(dataPoints) {
     initDVController(map, dataPoints);
+    let treatmentArray = dataPoints.map(x => x.data().treatment);
+    let treatments = new Set(treatmentArray); //todo must update with new live data
+    createTreatmentFilters(treatments);
   });
+
+  //todo create (filtered) datapoint listener interface - if needed in more than one place
 }
 
 window.initApp = initApp;
