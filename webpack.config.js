@@ -2,6 +2,7 @@ const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const Dotenv = require('dotenv-webpack');
 
 module.exports = {
   entry: './AirPollMain.js',
@@ -24,6 +25,7 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin('build'),
+    new Dotenv(),
     new MiniCssExtractPlugin({
       filename: 'nouislider.css',
     }),

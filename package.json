@@ -25,6 +25,10 @@
     "webpack-cli": "^3.1.0"
   },
   "dependencies": {
+    "dotenv-webpack": "^1.5.7",
     "serve": "^10.0.2"
+  },
+  "engines": {
+    "node": "10.8.0"
   }
 }
