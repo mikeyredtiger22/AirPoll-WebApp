@@ -1,3 +1,4 @@
+import './nouislider.css'; //for webpack dependency tree
 import { firebaseCredentials } from './FirebaseCredentials';
 import { initDVController } from './DataVisualisationController';
 import { addSliders, createTreatmentFilters } from './Filter';

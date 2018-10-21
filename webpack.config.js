@@ -1,31 +1,40 @@
-var path = require('path');
+const path = require('path');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 module.exports = {
-  mode: 'development',
-  watch: true,
   entry: './AirPollMain.js',
   output: {
     path: path.resolve(__dirname, 'build'),
-    filename: 'app.bundle.js'
+    filename: 'app.bundle.js',
   },
   module: {
-    rules: [{
-      test: /\.js/,
-      exclude: /node_modules/,
-      loader: 'babel-loader'
-    }]
+    rules: [
+      {
+        test: /\.js/,
+        exclude: /node_modules/,
+        loader: 'babel-loader',
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', MiniCssExtractPlugin.loader, 'css-loader'],
+      },
+    ],
   },
+  plugins: [
+    new CleanWebpackPlugin('build'),
+    new MiniCssExtractPlugin({
+      filename: 'nouislider.css',
+    }),
+    new HtmlWebpackPlugin({
+      title: 'AirPoll',
+      inject: true,
+      template: 'index.html',
+    }),
+  ],
   stats: {
-    colors: true
+    colors: true,
   },
-  devtool: 'source-map'
+  devtool: 'source-map',
 };
-
-// module.exports = {
-//   entry: './AirPollMain.js',
-//   output: {
-//     filename: 'main.js',
-//     path: path.resolve(__dirname, 'dist')
-//   },
-//   mode: 'development'
-// };

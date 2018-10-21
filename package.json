@@ -1,8 +1,13 @@
 {
   "name": "AirPoll-WebApp",
   "version": "1.0.0",
-  "main": "index.html",
+  "private": true,
   "scripts": {
+    "dev": "webpack --mode development",
+    "build": "webpack --mode production",
+    "start": "serve -s build",
+    "postinstall": "npm run dev",
+    "heroku-postbuild": "npm run dev",
     "webpack": "webpack --display-error-details"
   },
   "devDependencies": {
@@ -11,7 +16,15 @@
     "babel-loader": "^7.1.5",
     "babel-preset-env": "^1.7.0",
     "babel-preset-es2015": "^6.24.1",
+    "clean-webpack-plugin": "^0.1.19",
+    "css-loader": "^1.0.0",
+    "html-webpack-plugin": "^3.2.0",
+    "mini-css-extract-plugin": "^0.4.4",
+    "style-loader": "^0.23.1",
     "webpack": "^4.16.5",
     "webpack-cli": "^3.1.0"
+  },
+  "dependencies": {
+    "serve": "^10.0.2"
   }
 }
