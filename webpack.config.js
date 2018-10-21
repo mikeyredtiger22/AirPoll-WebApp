@@ -28,12 +28,12 @@ module.exports = {
     new CleanWebpackPlugin('build'),
     new webpack.DefinePlugin({
       'process.env': {
-        'apiKey': process.env.apiKey,
-        'authDomain': process.env.authDomain,
-        'databaseURL': process.env.databaseURL,
-        'projectId': process.env.projectId,
-        'storageBucket': process.env.storageBucket,
-        'messagingSenderId': process.env.messagingSenderId,
+        'apiKey': JSON.stringify(process.env.apiKey),
+        'authDomain': JSON.stringify(process.env.authDomain),
+        'databaseURL': JSON.stringify(process.env.databaseURL),
+        'projectId': JSON.stringify(process.env.projectId),
+        'storageBucket': JSON.stringify(process.env.storageBucket),
+        'messagingSenderId': JSON.stringify(process.env.messagingSenderId),
       }
     }),
     new MiniCssExtractPlugin({
