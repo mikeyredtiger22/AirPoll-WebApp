@@ -1,4 +1,5 @@
 export function firebaseCredentials() {
+  console.log('ProjectID: ', process.env.projectId);
   return {
     apiKey: process.env.apiKey,
     authDomain: process.env.authDomain,

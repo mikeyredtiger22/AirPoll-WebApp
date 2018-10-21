@@ -31,7 +31,7 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       title: 'AirPoll',
-      inject: true,
+      inject: false,
       template: 'index.html',
     }),
   ],
