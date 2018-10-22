@@ -44,15 +44,27 @@ function initMap() {
 
 function addMapClickListener(map, dataPointsDbRef) {
   map.addListener('click', function (mapLayer) {
-    // todo migrate to new datapoint structure
-    const dataPoint = {
-      latlng: mapLayer.latLng.toJSON(),
-      value: Math.floor((Math.random() * 100)).toString(),
-      date: new Date().toUTCString(),
-    };
+    getRandomValues((treatment, sensorID) => {
+      const dataPoint = {
+        lat: mapLayer.latLng.lat(),
+        lng: mapLayer.latLng.lng(),
+        value: Math.floor((Math.random() * 100)).toString(),
+        timestamp: new Date().toUTCString(),
+        sensorID: sensorID,
+        treatment: treatment,
+      };
 
-    addNewDataPointClickToDb(dataPointsDbRef, dataPoint);
+      addNewDataPointClickToDb(dataPointsDbRef, dataPoint);
+    });
   });
+}
+
+function getRandomValues(callback) {
+  let randomVal = Math.random();
+  let treatment = randomVal < 0.3 ? 'A' :
+    randomVal < 0.7 ? 'B' : 'C';
+  let sensorID = 'test' + randomVal.toString()[2] + treatment;
+  callback(treatment, sensorID);
 }
 
 function addNewDataPointClickToDb(dataPointsDbRef, dataPoint) {

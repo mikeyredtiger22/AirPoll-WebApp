@@ -40,7 +40,7 @@ function createMarkers() {
       },
     });
 
-    addDataPointClickListener(marker, dataPoint.date, dataPoint.value);
+    addDataPointClickListener(marker, dataPoint.timestamp, dataPoint.value);
     dataPointMarkers.push(marker);
   });
 }
@@ -48,7 +48,9 @@ function createMarkers() {
 function createHeatmap() {
   heatmap = new google.maps.visualization.HeatmapLayer({radius: 0.005, dissipating: false});
   allDataPoints.forEach(function (dataPoint) {
-    heatmap.getData().push(dataPoint.latlng);
+    if (dataPoint.latlng) {
+      heatmap.getData().push(dataPoint.latlng);
+    }
   });
 }
 
