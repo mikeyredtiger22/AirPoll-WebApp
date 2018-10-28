@@ -1,7 +1,7 @@
 import './nouislider.css'; //for webpack dependency tree
 import { firebaseCredentials } from './FirebaseCredentials';
-import { initDVController } from './DataVisualisationController';
-import { addSliders, createTreatmentFilters } from './Filter';
+import { initDVController, addFilteredDataPoint } from './DataVisualisationController';
+import { addSliders, addDataPoint, addFilteredDataPointListener } from './Filter';
 
 function initApp() {
   const config = firebaseCredentials(); //Firebase API keys
@@ -9,18 +9,19 @@ function initApp() {
   const dataPointsDbRef = firebase.firestore().collection('data');
 
   const map = initMap();
+  initDVController(map);
 
   addMapClickListener(map, dataPointsDbRef);
-  addSliders();
+  addFilteredDataPointListener(addFilteredDataPoint);
+  addDataPointsListener(dataPointsDbRef, addDataPoint);
+  // addSliders();
 
-  getDataPointsFromDB(dataPointsDbRef, function(dataPoints) {
-    initDVController(map, dataPoints);
-    let treatmentArray = dataPoints.map(x => x.data().treatment);
-    let treatments = new Set(treatmentArray); //todo must update with new live data
-    createTreatmentFilters(treatments);
-  });
-
-  //todo create (filtered) datapoint listener interface - if needed in more than one place
+  // getDataPointsFromDB(dataPointsDbRef, function(dataPoints) {
+  //   initDVController(map, dataPoints);
+  //   // let treatmentArray = dataPoints.map(x => x.data().treatment);
+  //   // let treatments = new Set(treatmentArray);
+  //   // createTreatmentFilters(treatments);
+  // });
 }
 
 window.initApp = initApp;
@@ -39,6 +40,7 @@ function initMap() {
     }],
     disableDoubleClickZoom: true,
     streetViewControl: false,
+    fullscreenControl: false,
   });
 }
 
@@ -81,4 +83,12 @@ function getDataPointsFromDB(dataPointsDbRef, callback) {
   });
 }
 
-//TODO: get datapoints as they are added to database
+function addDataPointsListener(dataPointsDbRef, callback) {
+  dataPointsDbRef.onSnapshot(function (snapshot) {
+    snapshot.docChanges.forEach(function (docChange) {
+      if (docChange.type === "added") {
+        callback(docChange.doc.data());
+      }
+    });
+  });
+}

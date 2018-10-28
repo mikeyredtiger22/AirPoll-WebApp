@@ -1,5 +1,5 @@
 let map;
-let allDataPoints;
+let allDataPoints = [];
 let dataGrid = [];
 let scale;
 let projection;
@@ -7,9 +7,12 @@ let ne;
 let sw;
 let gridLengthPixels;
 
-function initGridOverlay(mapObject, dataPoints) {
+function initGridOverlay(mapObject) {
   map = mapObject;
-  allDataPoints = dataPoints;
+}
+
+function addFilteredDataPointToGrid(dataPoint) {
+  allDataPoints.push(dataPoint);
 }
 
 function hideDataGrid() {
@@ -209,6 +212,7 @@ function drawRectangle(bounds, value) {
 
 export {
   initGridOverlay,
+  addFilteredDataPointToGrid,
   hideDataGrid,
   displayGrid,
 };

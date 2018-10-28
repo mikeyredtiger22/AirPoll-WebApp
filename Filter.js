@@ -1,7 +1,25 @@
 
+let allDataPoints = [];
+let filteredDataPoints = [];
+let dataPointListeners = [];
+
+// Callback functions to receive filtered data points
+function addFilteredDataPointListener(listener) {
+  dataPointListeners.push(listener);
+}
+
+function addDataPoint(dataPoint) {
+  // allDataPoints.push(dataPoint);
+
+  // filtered..
+  // filteredDataPoints.push(dataPoint);
+  dataPointListeners.forEach(function (listener) {
+    listener(dataPoint);
+  });
+}
+
 function createTreatmentFilters(treatments) {
   console.log(treatments);
-  // todo relabel 'undefined' treatment or fix data
   /*
   <div class="form-check form-check-inline">
       <input class="form-check-input" type="checkbox" id="inlineCheckbox3" value="C">
@@ -9,7 +27,6 @@ function createTreatmentFilters(treatments) {
   </div>
    */
   //todo: create div element (checkbox) for each
-  //todo: attach listener to hide datapoints & DV (high level filter)
 }
 
 function addSliders() {
@@ -53,6 +70,7 @@ function addSliders() {
 }
 
 export {
-  createTreatmentFilters,
+  addDataPoint,
+  addFilteredDataPointListener,
   addSliders,
 }
