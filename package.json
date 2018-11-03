@@ -6,7 +6,7 @@
     "dev": "webpack --mode development",
     "build": "webpack --mode production",
     "serve": "serve -s build",
-    "start": "npm run dev && npm run serve",
+    "start": "npm run build && npm run serve",
     "postinstall": "npm run dev",
     "heroku-postbuild": "npm run dev",
     "webpack": "webpack --display-error-details"

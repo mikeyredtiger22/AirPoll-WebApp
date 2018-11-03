@@ -1,5 +1,5 @@
 import { initButtonEventHandler } from './ButtonEventHandler';
-import { displayGrid, hideDataGrid, initGridOverlay, addFilteredDataPointToGrid } from './GridOverlay';
+import { displayGridWhenReady, hideDataGrid, initGridOverlay, addFilteredDataPointToGrid } from './GridOverlay';
 
 const DEFAULT_SHOW_POINTS = true;
 const DEFAULT_SHOW_CIRCLES = false;
@@ -18,14 +18,21 @@ let heatmap;
 
 function initDVController(mapObject) {
   map = mapObject;
-  heatmap = new google.maps.visualization.HeatmapLayer({radius: 0.005, dissipating: false});
-  initGridOverlay(mapObject);
+  initDataVisualisations();
   initButtonEventHandler(setShowDataGrid, setShowDataCircles, setShowDataPoints, setShowDensityHeatmap);
+}
+
+function initDataVisualisations() {
+  initGridOverlay(map);
+  if (showGrid) {
+    displayGridWhenReady();
+  }
+  const heatmapOptions = {radius: 0.005, dissipating: false, map: showHeatmap ? map : null};
+  heatmap = new google.maps.visualization.HeatmapLayer(heatmapOptions);
 }
 
 function addFilteredDataPoint(dataPoint) {
   dataPoint.latlng = new google.maps.LatLng(dataPoint.lat, dataPoint.lng);
-  // todo show DV if set to show instead of using default start variables
   createMarker(dataPoint);
   createCircle(dataPoint);
   addDataPointToHeatmap(dataPoint);
@@ -99,7 +106,7 @@ function addDataPointClickListener(view, date, value) {
 function setShowDataGrid(show) {
   showGrid = show;
   if (show) {
-    displayGrid();
+    displayGridWhenReady();
   } else {
     hideDataGrid();
   }

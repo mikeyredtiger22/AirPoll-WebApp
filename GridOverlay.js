@@ -7,8 +7,18 @@ let ne;
 let sw;
 let gridLengthPixels;
 
+let shouldDisplayGrid = false;
+let projectionReady = false;
+let boundsReady = false;
+
 function initGridOverlay(mapObject) {
   map = mapObject;
+  google.maps.event.addListenerOnce(map, 'projection_changed', function() {
+    mapProjectionIsReady();
+  });
+  google.maps.event.addListenerOnce(map, 'bounds_changed', function() {
+    mapBoundsIsReady();
+  });
 }
 
 function addFilteredDataPointToGrid(dataPoint) {
@@ -21,6 +31,27 @@ function hideDataGrid() {
   });
 }
 
+function displayGridWhenReady() {
+  shouldDisplayGrid = true;
+  drawGridIfReady();
+}
+
+function mapProjectionIsReady() {
+  projectionReady = true;
+  drawGridIfReady();
+}
+
+function mapBoundsIsReady() {
+  boundsReady = true;
+  drawGridIfReady();
+}
+
+function drawGridIfReady() {
+  if (shouldDisplayGrid && projectionReady && boundsReady) {
+    drawGrid();
+  }
+}
+
 function latLngToPixels(latlng, callback) {
   let point = projection.fromLatLngToPoint(latlng);
   let pixelX = Math.round((point.x - sw.x) * scale);
@@ -28,7 +59,7 @@ function latLngToPixels(latlng, callback) {
   callback(pixelX, pixelY);
 }
 
-function displayGrid() {
+function drawGrid() {
 
   //Input:
   let grids = 50; // 20 grids, end to end on smallest screen dimension
@@ -214,5 +245,5 @@ export {
   initGridOverlay,
   addFilteredDataPointToGrid,
   hideDataGrid,
-  displayGrid,
+  displayGridWhenReady,
 };

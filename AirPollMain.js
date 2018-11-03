@@ -83,6 +83,7 @@ function getDataPointsFromDB(dataPointsDbRef, callback) {
   });
 }
 
+// todo reword / comment
 function addDataPointsListener(dataPointsDbRef, callback) {
   dataPointsDbRef.onSnapshot(function (snapshot) {
     snapshot.docChanges.forEach(function (docChange) {
