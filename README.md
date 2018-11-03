@@ -1,11 +1,18 @@
 ### AirPoll - Web App
 
-This web app will eventually be integrated with an Android App for Crowd-Sourced Air Pollution Sensing.
-This will then be used to visualise patterns in air pollution levels, time of day and time of the week. 
+Part of the AirPoll project.
 
-Demo videos are rendering 369 datapoints. Using Firestore as database / backend
+Live demo at: https://airpoll-webapp-deploy.herokuapp.com/
+
+Custom Data Visualisation for live air-pollution data collected from IoT devices.
+
+Back end uses [The Things Network](https://www.thethingsnetwork.org/) and [Firebase Firestore](https://firebase.google.com/docs/firestore/) .
+
+React Native mobile app to link user's with data and different incentive treatments (Coming soon).
 
 # Demo Videos
+
+Demo videos are rendering 369 datapoints.
 
 ### Data Points Demo
 

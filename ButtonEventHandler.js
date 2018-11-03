@@ -9,6 +9,7 @@ let showDataPointsVal;
 let showDensityHeatmapVal;
 
 // todo reduce duplicated code - use enums for data vis type
+// todo change class to take default values and set button initialisation text
 function initButtonEventHandler(showDataGridM, showDataCirclesM, showDataPointsM, showDensityHeatmapM) {
   showDataGrid = showDataGridM;
   showDataCircles = showDataCirclesM;
