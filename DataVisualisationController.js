@@ -1,6 +1,16 @@
 import { initButtonEventHandler } from './ButtonEventHandler';
 import { displayGrid, hideDataGrid, initGridOverlay, addFilteredDataPointToGrid } from './GridOverlay';
 
+const DEFAULT_SHOW_POINTS = true;
+const DEFAULT_SHOW_CIRCLES = false;
+const DEFAULT_SHOW_GRID = false;
+const DEFAULT_SHOW_HEATMAP = false;
+
+let showPoints = DEFAULT_SHOW_POINTS;
+let showCircles = DEFAULT_SHOW_CIRCLES;
+let showGrid = DEFAULT_SHOW_GRID;
+let showHeatmap = DEFAULT_SHOW_HEATMAP;
+
 let map;
 let dataPointMarkers = [];
 let dataPointCircles = [];
@@ -10,7 +20,7 @@ function initDVController(mapObject) {
   map = mapObject;
   heatmap = new google.maps.visualization.HeatmapLayer({radius: 0.005, dissipating: false});
   initGridOverlay(mapObject);
-  initButtonEventHandler(showDataGrid, showDataCircles, showDataPoints, showDensityHeatmap);
+  initButtonEventHandler(setShowDataGrid, setShowDataCircles, setShowDataPoints, setShowDensityHeatmap);
 }
 
 function addFilteredDataPoint(dataPoint) {
@@ -34,6 +44,7 @@ function createMarker(dataPoint) {
   const marker = new google.maps.Marker({
     position: dataPoint.latlng,
     map: map,
+    visible: showPoints,
     icon: {
       path: google.maps.SymbolPath.CIRCLE,
       strokeColor: colorString,
@@ -67,7 +78,7 @@ function drawCircle(latlng, map, colorString, opacity, radius, date, value, addL
     map: map,
     center: latlng,
     radius: radius,
-    visible: false,
+    visible: showCircles,
   });
 
   dataPointCircles.push(circle);
@@ -85,7 +96,8 @@ function addDataPointClickListener(view, date, value) {
   });
 }
 
-function showDataGrid(show) {
+function setShowDataGrid(show) {
+  showGrid = show;
   if (show) {
     displayGrid();
   } else {
@@ -93,20 +105,22 @@ function showDataGrid(show) {
   }
 }
 
-function showDataCircles(show) {
+function setShowDataCircles(show) {
+  showCircles = show;
   dataPointCircles.forEach(function (dataPointCircle) {
     dataPointCircle.setVisible(show);
   });
 }
 
-function showDataPoints(show) {
-  showDataPoints = show;
+function setShowDataPoints(show) {
+  showPoints = show;
   dataPointMarkers.forEach(function (dataPointMarker) {
     dataPointMarker.setVisible(show);
   });
 }
 
-function showDensityHeatmap(show) {
+function setShowDensityHeatmap(show) {
+  showHeatmap = show;
   heatmap.setMap(show ? map : null);
 }
 

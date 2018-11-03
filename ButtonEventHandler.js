@@ -8,6 +8,7 @@ let showDataCirclesVal;
 let showDataPointsVal;
 let showDensityHeatmapVal;
 
+// todo reduce duplicated code - use enums for data vis type
 function initButtonEventHandler(showDataGridM, showDataCirclesM, showDataPointsM, showDensityHeatmapM) {
   showDataGrid = showDataGridM;
   showDataCircles = showDataCirclesM;
