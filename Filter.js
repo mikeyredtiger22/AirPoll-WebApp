@@ -31,7 +31,7 @@ function createTreatmentFilter(treatment) {
   let treatmentDiv = document.createElement('div');
   treatmentDiv.className = 'form-check form-check-inline';
   treatmentDiv.innerHTML =
-`<input class="form-check-input" type="checkbox" id="treatment_${treatment}" value="${treatment}">
+`<input class="form-check-input" type="checkbox" id="treatment_${treatment}" value="${treatment}" checked>
 <label class="form-check-label" for="treatment_${treatment}">${treatment}</label>`;
 
   treatmentsHtmlElements.push(treatmentDiv);

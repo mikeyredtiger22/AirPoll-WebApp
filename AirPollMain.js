@@ -92,14 +92,14 @@ function addMapThemeController(map) {
     // Set map theme
     map.setOptions({styles: showDarkTheme? mapDarkThemeStyle : mapLightThemeStyle});
     // Set text color
-    document.body.style.color = showDarkTheme? '#ffffff' : '#000000';
-    // Set panel transparency (transparent in dark theme)
+    document.body.style.color = showDarkTheme? '#ffffff' : '#33333375';
+    // Set panel background
     let panels = document.getElementsByClassName('panel');
     for( let panel of panels) {
       if (showDarkTheme) {
-        panel.classList.add('transparent');
+        panel.classList.add('darkPanel');
       } else {
-        panel.classList.remove('transparent');
+        panel.classList.remove('darkPanel');
       }
     }
   };

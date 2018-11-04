@@ -19,25 +19,23 @@
             padding: 0;
             color: #ffffff;
         }
-
         .panel {
             position: absolute;
-
-            background-color: rgba(255, 255, 255, 0.51);
+            background-color: rgba(255, 255, 255, 0.5);
             border: 2px solid rgba(255, 255, 255, 0.5);
             border-radius: 3px;
             box-shadow: 0 2px 6px rgba(0,0,0,.3);
             text-align: center;
         }
-        .transparent {
-            background-color: transparent!important;
+        .darkPanel {
+            background-color: #3333337f;
         }
         #viewPanel {
             top: 60px;
             left: 10px;
         }
         #filterPanel {
-            width: 65%;
+            width: 400px;
             right: 60px;
             bottom: 25px;
         }
@@ -68,7 +66,7 @@
 <div id="wrapper">
     <div id="map"></div>
 
-    <div id="viewPanel" class="px-2 py-2 panel transparent">
+    <div id="viewPanel" class="px-2 py-2 panel darkPanel">
         <div class="row justify-content-start">
             <div class="col-auto">
                 <label id="viewTypeLabel"><b>View Type</b></label>
@@ -115,7 +113,7 @@
         </div>
     </div>
 
-    <div id="filterPanel" class="px-2 py-2 panel transparent">
+    <div id="filterPanel" class="px-2 py-2 panel darkPanel">
         <div class="row justify-content-start">
             <div class="col-auto">
                 <label id="FilterLabel"><b>Filter Data</b></label>
@@ -124,14 +122,14 @@
         <div id="treatments">
             <div id="selectTreatments">Select Treatments:</div>
         </div>
-        <div id="dateFilterSlider"></div>
+        <div id="dateFilterSlider" class="range"></div>
         <div id="dateRangeOutput">Select Date Range above</div>
         <br>
-        <div id="timeFilterSlider"></div>
+        <div id="timeFilterSlider" class="range"></div>
         <div id="timeRangeOutput">Select Time Range above</div>
     </div>
 
-    <div id="dataPointPanel" class="panel transparent">
+    <div id="dataPointPanel" class="panel darkPanel">
         <form>
             <label><b>Data Point</b></label>
             <div class="form-group row">
