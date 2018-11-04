@@ -14,7 +14,7 @@ function initApp() {
   addMapClickListener(map, dataPointsDbRef);
   addFilteredDataPointListener(addFilteredDataPoint);
   addDataPointsListener(dataPointsDbRef, addDataPoint);
-  // addSliders();
+  addSliders();
 
   // getDataPointsFromDB(dataPointsDbRef, function(dataPoints) {
   //   initDVController(map, dataPoints);

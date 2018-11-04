@@ -3,13 +3,21 @@ let allDataPoints = [];
 let filteredDataPoints = [];
 let dataPointListeners = [];
 
+let treatments = [];
+let treatmentsHtmlElements = [];
+
 // Callback functions to receive filtered data points
 function addFilteredDataPointListener(listener) {
   dataPointListeners.push(listener);
 }
 
 function addDataPoint(dataPoint) {
+  if (!treatments.includes(dataPoint.treatment)){ // todo use set
+    createTreatmentFilter(dataPoint.treatment);
+  }
   // allDataPoints.push(dataPoint);
+
+  //todo: reset all data points anddd live data point methods
 
   // filtered..
   // filteredDataPoints.push(dataPoint);
@@ -18,15 +26,17 @@ function addDataPoint(dataPoint) {
   });
 }
 
-function createTreatmentFilters(treatments) {
-  console.log(treatments);
-  /*
-  <div class="form-check form-check-inline">
-      <input class="form-check-input" type="checkbox" id="inlineCheckbox3" value="C">
-      <label class="form-check-label" for="inlineCheckbox3">Treatment C</label>
-  </div>
-   */
-  //todo: create div element (checkbox) for each
+function createTreatmentFilter(treatment) {
+  treatments.push(treatment);
+  let treatmentDiv = document.createElement('div');
+  treatmentDiv.className = 'form-check form-check-inline';
+  treatmentDiv.innerHTML =
+`<input class="form-check-input" type="checkbox" id="treatment_${treatment}" value="${treatment}">
+<label class="form-check-label" for="treatment_${treatment}">${treatment}</label>`;
+
+  treatmentsHtmlElements.push(treatmentDiv);
+  let treatmentContainer = document.getElementById('treatments');
+  treatmentContainer.appendChild(treatmentDiv);
 }
 
 function addSliders() {
