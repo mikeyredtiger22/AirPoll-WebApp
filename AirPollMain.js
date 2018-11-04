@@ -15,13 +15,7 @@ function initApp() {
   addFilteredDataPointListener(addFilteredDataPoint);
   addDataPointsListener(dataPointsDbRef, addDataPoint);
   addSliders();
-
-  // getDataPointsFromDB(dataPointsDbRef, function(dataPoints) {
-  //   initDVController(map, dataPoints);
-  //   // let treatmentArray = dataPoints.map(x => x.data().treatment);
-  //   // let treatments = new Set(treatmentArray);
-  //   // createTreatmentFilters(treatments);
-  // });
+  addMapThemeController(map);
 }
 
 window.initApp = initApp;
@@ -31,13 +25,7 @@ function initMap() {
     center: {lat: 50.9365, lng: -1.396},
     zoom: 15,
     //hide points of interest and public transport
-    styles: [{
-      featureType: 'poi',
-      stylers: [{visibility: 'off'}],
-    }, {
-      featureType: 'transit.station',
-      stylers: [{visibility: 'off'}],
-    }],
+    styles: mapDarkThemeStyle,
     disableDoubleClickZoom: true,
     streetViewControl: false,
     fullscreenControl: false,
@@ -87,9 +75,210 @@ function getDataPointsFromDB(dataPointsDbRef, callback) {
 function addDataPointsListener(dataPointsDbRef, callback) {
   dataPointsDbRef.onSnapshot(function (snapshot) {
     snapshot.docChanges.forEach(function (docChange) {
-      if (docChange.type === "added") {
+      if (docChange.type === 'added') {
         callback(docChange.doc.data());
       }
     });
   });
 }
+
+// todo: will eventually move to new theme controller file (with more themes)
+function addMapThemeController(map) {
+  const toggleThemeButton = document.getElementById('toggleTheme');
+  toggleThemeButton.onclick = function () {
+    let showDarkTheme = (toggleThemeButton.innerText === 'Switch to Dark Theme');
+    // Set toggle button text
+    toggleThemeButton.innerText = showDarkTheme ? 'Switch to Light Theme' : 'Switch to Dark Theme';
+    // Set map theme
+    map.setOptions({styles: showDarkTheme? mapDarkThemeStyle : mapLightThemeStyle});
+    // Set text color
+    document.body.style.color = showDarkTheme? '#ffffff' : '#000000';
+    // Set panel transparency (transparent in dark theme)
+    let panels = document.getElementsByClassName('panel');
+    for( let panel of panels) {
+      if (showDarkTheme) {
+        panel.classList.add('transparent');
+      } else {
+        panel.classList.remove('transparent');
+      }
+    }
+  };
+}
+
+const mapLightThemeStyle = [
+  {
+    featureType: 'poi',
+    stylers: [{visibility: 'off'}],
+  }, {
+    featureType: 'transit.station',
+    stylers: [{visibility: 'off'}],
+  },
+];
+
+const mapDarkThemeStyle = [
+  {
+    'featureType': 'all',
+    'elementType': 'labels.text.fill',
+    'stylers': [
+      {
+        'saturation': 36,
+      },
+      {
+        'color': '#000000',
+      },
+      {
+        'lightness': 40,
+      },
+    ],
+  },
+  {
+    'featureType': 'all',
+    'elementType': 'labels.text.stroke',
+    'stylers': [
+      {
+        'visibility': 'on',
+      },
+      {
+        'color': '#000000',
+      },
+      {
+        'lightness': 16,
+      },
+    ],
+  },
+  {
+    'featureType': 'all',
+    'elementType': 'labels.icon',
+    'stylers': [
+      {
+        'visibility': 'off',
+      },
+    ],
+  },
+  {
+    'featureType': 'administrative',
+    'elementType': 'geometry.fill',
+    'stylers': [
+      {
+        'color': '#000000',
+      },
+      {
+        'lightness': 20,
+      },
+    ],
+  },
+  {
+    'featureType': 'administrative',
+    'elementType': 'geometry.stroke',
+    'stylers': [
+      {
+        'color': '#000000',
+      },
+      {
+        'lightness': 17,
+      },
+      {
+        'weight': 1.2,
+      },
+    ],
+  },
+  {
+    'featureType': 'landscape',
+    'elementType': 'geometry',
+    'stylers': [
+      {
+        'color': '#000000',
+      },
+      {
+        'lightness': 20,
+      },
+    ],
+  },
+  {
+    'featureType': 'poi',
+    'elementType': 'geometry',
+    'stylers': [
+      {
+        'color': '#000000',
+      },
+      {
+        'lightness': 21,
+      },
+    ],
+  },
+  {
+    'featureType': 'road.highway',
+    'elementType': 'geometry.fill',
+    'stylers': [
+      {
+        'color': '#000000',
+      },
+      {
+        'lightness': 17,
+      },
+    ],
+  },
+  {
+    'featureType': 'road.highway',
+    'elementType': 'geometry.stroke',
+    'stylers': [
+      {
+        'color': '#000000',
+      },
+      {
+        'lightness': 29,
+      },
+      {
+        'weight': 0.2,
+      },
+    ],
+  },
+  {
+    'featureType': 'road.arterial',
+    'elementType': 'geometry',
+    'stylers': [
+      {
+        'color': '#000000',
+      },
+      {
+        'lightness': 18,
+      },
+    ],
+  },
+  {
+    'featureType': 'road.local',
+    'elementType': 'geometry',
+    'stylers': [
+      {
+        'color': '#000000',
+      },
+      {
+        'lightness': 16,
+      },
+    ],
+  },
+  {
+    'featureType': 'transit',
+    'elementType': 'geometry',
+    'stylers': [
+      {
+        'color': '#000000',
+      },
+      {
+        'lightness': 19,
+      },
+    ],
+  },
+  {
+    'featureType': 'water',
+    'elementType': 'geometry',
+    'stylers': [
+      {
+        'color': '#000000',
+      },
+      {
+        'lightness': 17,
+      },
+    ],
+  },
+];
