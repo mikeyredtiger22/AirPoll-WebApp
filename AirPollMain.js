@@ -1,5 +1,5 @@
-import * as firebase from 'firebase/app'
-import 'firebase/firestore'
+import * as firebase from 'firebase/app';
+import 'firebase/firestore';
 import './nouislider.css'; //for webpack dependency tree
 import { firebaseCredentials } from './FirebaseCredentials';
 import { initDVController, addFilteredDataPoint } from './DataVisualisationController';
@@ -8,6 +8,11 @@ import { addSliders, addDataPoint, addFilteredDataPointListener } from './Filter
 function initApp() {
   const config = firebaseCredentials(); //Firebase API keys
   firebase.initializeApp(config);
+  firebase.firestore().settings({timestampsInSnapshots: true});
+  firebase.firestore().enablePersistence({experimentalTabSynchronization: true})
+  .catch(function (err) {
+    console.error('Failed offline persistence: ', err.code);
+  });
   const dataPointsDbRef = firebase.firestore().collection('data');
 
   const map = initMap();
@@ -76,7 +81,7 @@ function getDataPointsFromDB(dataPointsDbRef, callback) {
 // todo reword / comment
 function addDataPointsListener(dataPointsDbRef, callback) {
   dataPointsDbRef.onSnapshot(function (snapshot) {
-    snapshot.docChanges.forEach(function (docChange) {
+    snapshot.docChanges().forEach(function (docChange) {
       if (docChange.type === 'added') {
         callback(docChange.doc.data());
       }
@@ -92,12 +97,12 @@ function addMapThemeController(map) {
     // Set toggle button text
     toggleThemeButton.innerText = showDarkTheme ? 'Switch to Light Theme' : 'Switch to Dark Theme';
     // Set map theme
-    map.setOptions({styles: showDarkTheme? mapDarkThemeStyle : mapLightThemeStyle});
+    map.setOptions({styles: showDarkTheme ? mapDarkThemeStyle : mapLightThemeStyle});
     // Set text color
-    document.body.style.color = showDarkTheme? '#ffffff' : '#33333375';
+    document.body.style.color = showDarkTheme ? '#ffffff' : '#33333375';
     // Set panel background
     let panels = document.getElementsByClassName('panel');
-    for( let panel of panels) {
+    for (let panel of panels) {
       if (showDarkTheme) {
         panel.classList.add('darkPanel');
       } else {

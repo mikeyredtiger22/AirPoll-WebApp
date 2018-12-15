@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "dotenv-webpack": "^1.5.7",
-    "firebase": "4.11.0",
+    "firebase": "^5.7.0",
     "serve": "^10.0.2"
   },
   "engines": {
