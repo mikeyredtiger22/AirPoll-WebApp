@@ -1,3 +1,5 @@
+import * as firebase from 'firebase/app'
+import 'firebase/firestore'
 import './nouislider.css'; //for webpack dependency tree
 import { firebaseCredentials } from './FirebaseCredentials';
 import { initDVController, addFilteredDataPoint } from './DataVisualisationController';

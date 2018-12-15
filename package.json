@@ -7,7 +7,6 @@
     "build": "webpack --mode production",
     "serve": "serve -s build",
     "start": "npm run build && npm run serve",
-    "postinstall": "npm run dev",
     "heroku-postbuild": "npm run dev",
     "webpack": "webpack --display-error-details"
   },
@@ -27,6 +26,7 @@
   },
   "dependencies": {
     "dotenv-webpack": "^1.5.7",
+    "firebase": "4.11.0",
     "serve": "^10.0.2"
   },
   "engines": {
