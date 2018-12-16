@@ -22,6 +22,15 @@ module.exports = {
         test: /\.css$/,
         use: ['style-loader', MiniCssExtractPlugin.loader, 'css-loader'],
       },
+      {
+        test: /\.(png)$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {}
+          }
+        ]
+      }
     ],
   },
   devServer: {
@@ -44,9 +53,8 @@ module.exports = {
       filename: 'nouislider.css',
     }),
     new HtmlWebpackPlugin({
-      title: 'AirPoll',
-      inject: false,
       template: 'index.html',
+      favicon: 'favicon.png'
     }),
   ],
   stats: {

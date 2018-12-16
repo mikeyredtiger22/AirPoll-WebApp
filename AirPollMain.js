@@ -46,7 +46,7 @@ function addMapClickListener(map, dataPointsDbRef) {
         lat: mapLayer.latLng.lat(),
         lng: mapLayer.latLng.lng(),
         value: Math.floor((Math.random() * 100)).toString(),
-        timestamp: new Date().toUTCString(),
+        timestamp: Date.now(),
         sensorID: sensorID,
         treatment: treatment,
       };
