@@ -24,6 +24,10 @@ module.exports = {
       },
     ],
   },
+  devServer: {
+    contentBase: path.join(__dirname, 'build'),
+    open: true
+  },
   plugins: [
     new CleanWebpackPlugin('build'),
     new webpack.DefinePlugin({

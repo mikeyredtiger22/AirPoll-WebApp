@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "start": "yarn build && yarn serve",
     "dev": "webpack --mode development",
     "build": "webpack --mode production",
     "serve": "serve -s build",
-    "start": "npm run build && npm run serve",
-    "heroku-postbuild": "npm run dev",
-    "webpack": "webpack --display-error-details"
+    "watch": "webpack --mode development --watch",
+    "server": "webpack-dev-server --mode production",
+    "heroku-postbuild": "npm run build"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -21,8 +22,9 @@
     "html-webpack-plugin": "^3.2.0",
     "mini-css-extract-plugin": "^0.4.4",
     "style-loader": "^0.23.1",
-    "webpack": "^4.16.5",
-    "webpack-cli": "^3.1.0"
+    "webpack": "^4.27.1",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.10"
   },
   "dependencies": {
     "dotenv-webpack": "^1.5.7",
