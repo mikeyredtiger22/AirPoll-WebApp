@@ -2,7 +2,7 @@
 
 Part of the AirPoll project.
 
-Live demo at: https://airpoll-webapp-deploy.herokuapp.com/
+Live demo at: www.airpoll.com
 
 Custom Data Visualisation for live air-pollution data collected from IoT devices.
 

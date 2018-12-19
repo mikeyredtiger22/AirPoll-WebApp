@@ -54,7 +54,12 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       template: 'index.html',
-      favicon: 'favicon.png'
+      favicon: 'favicon.png',
+      inject: 'head', //This is so that the app bundle in loaded before the google maps library callback.
+      minify: {
+        collapseWhitespace: true,
+        removeComments: true
+      }
     }),
   ],
   stats: {
