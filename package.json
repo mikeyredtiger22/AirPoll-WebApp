@@ -6,10 +6,8 @@
     "start": "yarn build && yarn serve",
     "dev": "webpack --mode development",
     "build": "webpack --mode production",
-    "serve": "serve -s build",
     "watch": "webpack --mode production --watch",
-    "server": "webpack-dev-server --mode production",
-    "heroku-postbuild": "npm run build"
+    "server": "webpack-dev-server --mode production"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -28,9 +26,8 @@
     "webpack-dev-server": "^3.1.10"
   },
   "dependencies": {
-    "dotenv-webpack": "^1.5.7",
-    "firebase": "^5.7.0",
-    "serve": "^10.0.2"
+    "dotenv-webpack": "^1.6.0",
+    "firebase": "^5.7.0"
   },
   "engines": {
     "node": "10.8.0"
