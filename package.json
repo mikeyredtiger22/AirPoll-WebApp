@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "yarn build && yarn serve",
     "dev": "webpack --mode development",
     "build": "webpack --mode production",
     "watch": "webpack --mode production --watch",
