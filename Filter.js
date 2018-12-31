@@ -1,28 +1,31 @@
 let allDataPoints = [];
 let filteredDataPoints = [];
-let addFilteredDataPoint, resetFilteredDataPoints;
+let filteredDataPointListener;
 
 let allTreatments = [];
 let treatmentsToShow = new Set();
 
-// Callback functions to receive and reset filtered data points
-function addFilteredDataPointListener(addDataPoint, resetDataPoints) {
-  addFilteredDataPoint = addDataPoint;
-  resetFilteredDataPoints = resetDataPoints;
+let dateSlider, timeSlider;
+
+function initFilterPanel(listener) {
+  // Set filtered data point listener (callback functions to receive and reset filtered data points)
+  filteredDataPointListener = listener;
+
+  addDateTimeFilterSliders();
 }
 
 // Called from database
 function addDataPoint(dataPoint) {
+  allDataPoints.push(dataPoint);
+
   // Create treatments
   if (!allTreatments.includes(dataPoint.treatment)){
     createTreatmentFilter(dataPoint.treatment);
   }
 
-  allDataPoints.push(dataPoint);
-
   // Send to Data Visualisation (filtered data point listener)
   if (dataPointFilter(dataPoint)) {
-    addFilteredDataPoint(dataPoint);
+    filteredDataPointListener.addDataPoint(dataPoint);
   }
 }
 
@@ -33,10 +36,11 @@ function dataPointFilter(dataPoint) {
 function updateFilteredDataPoints() {
   // Reset filtered data points
   filteredDataPoints = allDataPoints.filter(dataPointFilter);
-  resetFilteredDataPoints();
+  // We reset all data points to prevent concurrency issues with multiple actions
+  filteredDataPointListener.resetDataPoints();
   filteredDataPoints.forEach(function (dataPoint) {
     // todo, better to send whole array?
-    addFilteredDataPoint(dataPoint);
+    filteredDataPointListener.addDataPoint(dataPoint);
   });
 }
 
@@ -67,14 +71,14 @@ function createTreatmentFilter(treatment) {
   });
 }
 
-function addSliders() {
+function addDateTimeFilterSliders() {
   // Create date and time sliders
   const hour = 60 * 60 * 1000;
   const day = 24 * hour;
   let dateSliderElement = document.getElementById('dateFilterSlider');
   let timeSliderElement = document.getElementById('timeFilterSlider');
 
-  let dateSlider = noUiSlider.create(dateSliderElement, {
+  dateSlider = noUiSlider.create(dateSliderElement, {
     start: [new Date('2018').getTime(), new Date('2019').getTime()],
     connect: true,
     behaviour: 'drag-snap',
@@ -84,7 +88,7 @@ function addSliders() {
       'max': new Date('2019').getTime(),
     }
   });
-  let timeSlider = noUiSlider.create(timeSliderElement, {
+  timeSlider = noUiSlider.create(timeSliderElement, {
     start: [0, day],
     connect: true,
     behaviour: 'drag-snap',
@@ -112,7 +116,6 @@ function addSliders() {
 }
 
 export {
+  initFilterPanel,
   addDataPoint,
-  addFilteredDataPointListener,
-  addSliders,
 }

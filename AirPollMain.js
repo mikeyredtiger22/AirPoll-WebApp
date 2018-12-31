@@ -2,10 +2,26 @@ import * as firebase from 'firebase/app';
 import 'firebase/firestore';
 import './nouislider.css'; //for webpack dependency tree
 import { firebaseCredentials } from './FirebaseCredentials';
-import { initDVController, resetFilteredDataPoints, addFilteredDataPoint } from './DataVisualisationController';
-import { addSliders, addDataPoint, addFilteredDataPointListener } from './Filter';
+import { initDVController, filteredDataPointListener } from './DataVisualisationController';
+import { initFilterPanel, addDataPoint } from './Filter';
 
 function initApp() {
+  const dataPointsDbRef = initDatabase();
+
+  const map = initMap();
+  initDVController(map);
+
+  // Used to easily add mock data points to database
+  addMapClickListener(map, dataPointsDbRef);
+  initFilterPanel(filteredDataPointListener);
+  addDatabaseListener(dataPointsDbRef, addDataPoint);
+  addMapThemeController(map);
+}
+
+// Used in google maps library loaded callback
+window.initApp = initApp;
+
+function initDatabase() {
   const config = firebaseCredentials(); //Firebase API keys
   firebase.initializeApp(config);
   firebase.firestore().settings({timestampsInSnapshots: true});
@@ -13,19 +29,8 @@ function initApp() {
   .catch(function (err) {
     console.error('Failed offline persistence: ', err.code);
   });
-  const dataPointsDbRef = firebase.firestore().collection('data');
-
-  const map = initMap();
-  initDVController(map);
-
-  addMapClickListener(map, dataPointsDbRef);
-  addFilteredDataPointListener(addFilteredDataPoint, resetFilteredDataPoints);
-  addDataPointsListener(dataPointsDbRef, addDataPoint);
-  addSliders();
-  addMapThemeController(map);
+  return firebase.firestore().collection('data');
 }
-
-window.initApp = initApp;
 
 function initMap() {
   return new google.maps.Map(document.getElementById('map'), {
@@ -72,14 +77,8 @@ function addNewDataPointClickToDb(dataPointsDbRef, dataPoint) {
   });
 }
 
-function getDataPointsFromDB(dataPointsDbRef, callback) {
-  dataPointsDbRef.get().then(function (dataPoints) {
-    callback(dataPoints.docs);
-  });
-}
-
-// todo reword / comment
-function addDataPointsListener(dataPointsDbRef, callback) {
+// Gets new data points as they are added to the database
+function addDatabaseListener(dataPointsDbRef, callback) {
   dataPointsDbRef.onSnapshot(function (snapshot) {
     snapshot.docChanges().forEach(function (docChange) {
       if (docChange.type === 'added') {

@@ -16,6 +16,11 @@ let dataPointMarkers = [];
 let dataPointCircles = [];
 let heatmap;
 
+let filteredDataPointListener = {
+  resetDataPoints: resetFilteredDataPoints,
+  addDataPoint: addFilteredDataPoint
+};
+
 function initDVController(mapObject) {
   map = mapObject;
   initDataVisualisations();
@@ -153,6 +158,5 @@ function setShowDensityHeatmap(show) {
 
 export {
   initDVController,
-  resetFilteredDataPoints,
-  addFilteredDataPoint,
+  filteredDataPointListener
 };
