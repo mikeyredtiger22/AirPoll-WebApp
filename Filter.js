@@ -1,5 +1,5 @@
 let allDataPoints = [];
-let filterFunctions = [];
+let showTreatments = new Map();
 let filteredDataPoints = [];
 
 let dataPointListeners = [];
@@ -12,22 +12,40 @@ function addFilteredDataPointListener(listener) {
 }
 
 function addDataPoint(dataPoint) {
-  if (!treatments.includes(dataPoint.treatment)){ // todo use set
+  if (!showTreatments.has(dataPoint.treatment)){
     createTreatmentFilter(dataPoint.treatment);
   }
   allDataPoints.push(dataPoint);
 
-  // filtered..
+  // if pass through filter:
   // filteredDataPoints.push(dataPoint);
+
   dataPointListeners.forEach(function (listener) {
     listener(dataPoint);
   });
 }
 
+function updateFilter() {
+  const treatmentsToShow = [];
+  showTreatments.forEach(function (value, key) {
+    if (value) {
+      treatmentsToShow.push(key);
+    }
+  });
+
+  // reset filtered data points
+  filteredDataPoints = allDataPoints.filter(function (datapoint) {
+    return treatmentsToShow.includes(datapoint.treatment);
+  });
+
+  console.log(filteredDataPoints.length);
+
+}
+
 function createTreatmentFilter(treatment) {
   // Create treatment checkbox
-  treatments.push(treatment);
-  console.log(treatments);
+  showTreatments.set(treatment, true);
+
   const treatmentID = 'treatment_' + treatment;
   const treatmentDiv = document.createElement('div');
   treatmentDiv.className = 'form-check form-check-inline';
@@ -41,7 +59,8 @@ function createTreatmentFilter(treatment) {
   // Add treatment filter change listener
   const checkbox = document.getElementById(treatmentID);
   checkbox.addEventListener('change', function() {
-    console.log(this.value, this.checked);
+    showTreatments.set(this.value, this.checked);
+    updateFilter();
   });
 }
 
