@@ -2,7 +2,7 @@ import * as firebase from 'firebase/app';
 import 'firebase/firestore';
 import './nouislider.css'; //for webpack dependency tree
 import { firebaseCredentials } from './FirebaseCredentials';
-import { initDVController, addFilteredDataPoint } from './DataVisualisationController';
+import { initDVController, resetFilteredDataPoints, addFilteredDataPoint } from './DataVisualisationController';
 import { addSliders, addDataPoint, addFilteredDataPointListener } from './Filter';
 
 function initApp() {
@@ -19,7 +19,7 @@ function initApp() {
   initDVController(map);
 
   addMapClickListener(map, dataPointsDbRef);
-  addFilteredDataPointListener(addFilteredDataPoint);
+  addFilteredDataPointListener(addFilteredDataPoint, resetFilteredDataPoints);
   addDataPointsListener(dataPointsDbRef, addDataPoint);
   addSliders();
   addMapThemeController(map);

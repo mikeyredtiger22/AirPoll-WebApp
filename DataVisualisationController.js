@@ -1,5 +1,5 @@
 import { initButtonEventHandler } from './ButtonEventHandler';
-import { displayGridWhenReady, hideDataGrid, initGridOverlay, addFilteredDataPointToGrid } from './GridOverlay';
+import * as gridOverlay from './GridOverlay';
 
 const DEFAULT_SHOW_POINTS = true;
 const DEFAULT_SHOW_CIRCLES = false;
@@ -23,12 +23,32 @@ function initDVController(mapObject) {
 }
 
 function initDataVisualisations() {
-  initGridOverlay(map);
+  gridOverlay.initGridOverlay(map);
   if (showGrid) {
-    displayGridWhenReady();
+    gridOverlay.displayGridWhenReady();
   }
   const heatmapOptions = {radius: 0.005, dissipating: false, map: showHeatmap ? map : null};
   heatmap = new google.maps.visualization.HeatmapLayer(heatmapOptions);
+}
+
+function resetFilteredDataPoints() {
+  // Reset markers
+  dataPointMarkers.forEach(function (marker) {
+    marker.setMap(null);
+  });
+  dataPointMarkers = [];
+
+  // Reset circles
+  dataPointCircles.forEach(function (circle) {
+    circle.setMap(null);
+  });
+  dataPointMarkers = [];
+
+  // Reset heatmap
+  heatmap.setData([]);
+
+  // Reset grid
+  gridOverlay.resetDataPoints();
 }
 
 function addFilteredDataPoint(dataPoint) {
@@ -36,7 +56,7 @@ function addFilteredDataPoint(dataPoint) {
   createMarker(dataPoint);
   createCircle(dataPoint);
   addDataPointToHeatmap(dataPoint);
-  addFilteredDataPointToGrid(dataPoint);
+  gridOverlay.addFilteredDataPointToGrid(dataPoint);
 }
 
 function addDataPointToHeatmap(dataPoint) {
@@ -68,13 +88,13 @@ function createMarker(dataPoint) {
 }
 
 function createCircle(dataPoint) {
-    const hue = (100 - dataPoint.value) * 0.6;
-    const colorString = 'hsl(' + hue + ', 100%, 50%)';
-    const date = new Date(dataPoint.date);
-    // Only add click listener to inner-most circle
-    drawCircle(dataPoint.latlng, map, colorString, 0.3, 50, date, dataPoint.value, true);
-    drawCircle(dataPoint.latlng, map, colorString, 0.2, 100, date, dataPoint.value);
-    drawCircle(dataPoint.latlng, map, colorString, 0.1, 200, date, dataPoint.value);
+  const hue = (100 - dataPoint.value) * 0.6;
+  const colorString = 'hsl(' + hue + ', 100%, 50%)';
+  const date = new Date(dataPoint.date);
+  // Only add click listener to inner-most circle
+  drawCircle(dataPoint.latlng, map, colorString, 0.3, 50, date, dataPoint.value, true);
+  drawCircle(dataPoint.latlng, map, colorString, 0.2, 100, date, dataPoint.value);
+  drawCircle(dataPoint.latlng, map, colorString, 0.1, 200, date, dataPoint.value);
 }
 
 function drawCircle(latlng, map, colorString, opacity, radius, date, value, addListener = false) {
@@ -106,9 +126,9 @@ function addDataPointClickListener(view, date, value) {
 function setShowDataGrid(show) {
   showGrid = show;
   if (show) {
-    displayGridWhenReady();
+    gridOverlay.displayGridWhenReady();
   } else {
-    hideDataGrid();
+    gridOverlay.hideDataGrid();
   }
 }
 
@@ -132,6 +152,7 @@ function setShowDensityHeatmap(show) {
 }
 
 export {
-  addFilteredDataPoint,
   initDVController,
+  resetFilteredDataPoints,
+  addFilteredDataPoint,
 };

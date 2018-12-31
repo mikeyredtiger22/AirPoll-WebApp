@@ -1,50 +1,49 @@
 let allDataPoints = [];
-let showTreatments = new Map();
 let filteredDataPoints = [];
+let addFilteredDataPoint, resetFilteredDataPoints;
 
-let dataPointListeners = [];
+let allTreatments = [];
+let treatmentsToShow = new Set();
 
-let treatments = [];
-
-// Callback functions to receive filtered data points
-function addFilteredDataPointListener(listener) {
-  dataPointListeners.push(listener);
+// Callback functions to receive and reset filtered data points
+function addFilteredDataPointListener(addDataPoint, resetDataPoints) {
+  addFilteredDataPoint = addDataPoint;
+  resetFilteredDataPoints = resetDataPoints;
 }
 
+// Called from database
 function addDataPoint(dataPoint) {
-  if (!showTreatments.has(dataPoint.treatment)){
+  // Create treatments
+  if (!allTreatments.includes(dataPoint.treatment)){
     createTreatmentFilter(dataPoint.treatment);
   }
+
   allDataPoints.push(dataPoint);
 
-  // if pass through filter:
-  // filteredDataPoints.push(dataPoint);
-
-  dataPointListeners.forEach(function (listener) {
-    listener(dataPoint);
-  });
+  // Send to Data Visualisation (filtered data point listener)
+  if (dataPointFilter(dataPoint)) {
+    addFilteredDataPoint(dataPoint);
+  }
 }
 
-function updateFilter() {
-  const treatmentsToShow = [];
-  showTreatments.forEach(function (value, key) {
-    if (value) {
-      treatmentsToShow.push(key);
-    }
+function dataPointFilter(dataPoint) {
+  return treatmentsToShow.has(dataPoint.treatment);
+}
+
+function updateFilteredDataPoints() {
+  // Reset filtered data points
+  filteredDataPoints = allDataPoints.filter(dataPointFilter);
+  resetFilteredDataPoints();
+  filteredDataPoints.forEach(function (dataPoint) {
+    // todo, better to send whole array?
+    addFilteredDataPoint(dataPoint);
   });
-
-  // reset filtered data points
-  filteredDataPoints = allDataPoints.filter(function (datapoint) {
-    return treatmentsToShow.includes(datapoint.treatment);
-  });
-
-  console.log(filteredDataPoints.length);
-
 }
 
 function createTreatmentFilter(treatment) {
   // Create treatment checkbox
-  showTreatments.set(treatment, true);
+  allTreatments.push(treatment);
+  treatmentsToShow.add(treatment);
 
   const treatmentID = 'treatment_' + treatment;
   const treatmentDiv = document.createElement('div');
@@ -59,8 +58,12 @@ function createTreatmentFilter(treatment) {
   // Add treatment filter change listener
   const checkbox = document.getElementById(treatmentID);
   checkbox.addEventListener('change', function() {
-    showTreatments.set(this.value, this.checked);
-    updateFilter();
+    if (this.checked) {
+      treatmentsToShow.add(this.value);
+    } else {
+      treatmentsToShow.delete(this.value);
+    }
+    updateFilteredDataPoints();
   });
 }
 

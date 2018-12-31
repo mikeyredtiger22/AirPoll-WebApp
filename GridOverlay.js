@@ -21,8 +21,13 @@ function initGridOverlay(mapObject) {
   });
 }
 
+function resetDataPoints() {
+  allDataPoints = [];
+}
+
 function addFilteredDataPointToGrid(dataPoint) {
   allDataPoints.push(dataPoint);
+  // todo redraw grid?
 }
 
 function hideDataGrid() {
@@ -243,6 +248,7 @@ function drawRectangle(bounds, value) {
 
 export {
   initGridOverlay,
+  resetDataPoints,
   addFilteredDataPointToGrid,
   hideDataGrid,
   displayGridWhenReady,
