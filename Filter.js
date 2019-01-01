@@ -7,6 +7,8 @@ let treatmentsToShow = new Set();
 
 let dateSlider, timeSlider;
 let dateStartInit, dateEnd, minTimestamp = Date.now();
+let noDateRangeSpecified = true, noTimeRangeSpecified = true;
+let dateFilterStart, dateFilterEnd;
 
 function initFilterPanel(listener) {
   // Set filtered data point listener (callback functions to receive and reset filtered data points)
@@ -38,17 +40,33 @@ function addDataPoint(dataPoint) {
 }
 
 function dataPointFilter(dataPoint) {
-  return treatmentsToShow.has(dataPoint.treatment);
+  if (!treatmentsToShow.has(dataPoint.treatment)) {
+    return false;
+  } else {
+    if (!noDateRangeSpecified) {
+      return (dataPoint.timestamp > dateFilterStart &&
+        dataPoint.timestamp < dateFilterEnd);
+    }
+    return true;
+  }
 }
 
 function updateFilteredDataPoints() {
-  // Reset filtered data points
-  filteredDataPoints = allDataPoints.filter(dataPointFilter);
-  // We reset all data points to prevent concurrency issues with multiple actions
+  // Reset filtered data points, we reset all data points
+  // to prevent concurrency issues with multiple actions
   filteredDataPointListener.resetDataPoints();
-  filteredDataPoints.forEach(function (dataPoint) {
-    // todo, better to send whole array?
-    filteredDataPointListener.addDataPoint(dataPoint);
+
+  // Get date and time filter values
+  const values = dateSlider.get();
+  dateFilterStart = parseInt(values[0]);
+  dateFilterEnd = parseInt(values[1]);
+
+  filteredDataPoints = [];
+  allDataPoints.forEach(function (dataPoint) {
+    if (dataPointFilter(dataPoint)) {
+      filteredDataPoints.push(dataPoint);
+      filteredDataPointListener.addDataPoint(dataPoint);
+    }
   });
 }
 
@@ -99,7 +117,7 @@ function addDateTimeFilterSliders() {
 
   // Create date and time sliders
   dateSlider = createSlider(dateSliderElement, dateStartInit, dateEnd, day);
-  timeSlider = createSlider(timeSliderElement, 0, 24, 0);
+  timeSlider = createSlider(timeSliderElement, 0, 24, 1);
   setDateFilterString(dateStartInit, dateEnd);
   setTimeFilterString(0, 24);
 
@@ -122,18 +140,33 @@ function updateDateSliderMin() {
 }
 
 function setDateFilterString(start, end) {
-  let startDate = new Date(start).toDateString();
-  let endDate = new Date(end).toDateString();
-  let dateRangeString = startDate + ' - ' + endDate;
+  let dateRangeString;
+  if (start === minTimestamp && end === dateEnd) {
+    noDateRangeSpecified = true;
+    dateRangeString = 'All Dates';
+  } else {
+    noDateRangeSpecified = false;
+    let startDate = new Date(start).toDateString();
+    let endDate = new Date(end).toDateString();
+    dateRangeString = startDate + ' - ' + endDate;
+  }
   document.getElementById('dateRangeOutput').innerHTML = 'Date Range: ' + dateRangeString;
+  updateFilteredDataPoints();
 }
 
-// todo INCLUDE - ALL DAY / ALL POINTS
 function setTimeFilterString(start, end) {
-  let startTime = parseInt(start);
-  let endTime = parseInt(end) % 24;
-  let timeRangeString = startTime + ':00 - ' + endTime + ':00';
+  let timeRangeString;
+  if (start === 0 && end === 24) {
+    noTimeRangeSpecified = true;
+    timeRangeString = 'All Day';
+  } else {
+    noTimeRangeSpecified = false;
+    let startTime = parseInt(start);
+    let endTime = parseInt(end) % 24;
+    timeRangeString = startTime + ':00 - ' + endTime + ':00';
+  }
   document.getElementById('timeRangeOutput').innerHTML = 'Time Range: ' + timeRangeString;
+  updateFilteredDataPoints();
 }
 
 export {
