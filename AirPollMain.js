@@ -77,9 +77,9 @@ function addNewDataPointClickToDb(dataPointsDbRef, dataPoint) {
   });
 }
 
-// Gets new data points as they are added to the database
+// Gets all data points from database (oldest first) and new data points as they are added
 function addDatabaseListener(dataPointsDbRef, callback) {
-  dataPointsDbRef.onSnapshot(function (snapshot) {
+  dataPointsDbRef.orderBy('timestamp', 'asc').onSnapshot(function (snapshot) {
     snapshot.docChanges().forEach(function (docChange) {
       if (docChange.type === 'added') {
         callback(docChange.doc.data());
